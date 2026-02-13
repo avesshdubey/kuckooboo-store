@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% block title %}Order #{{ order.id }} | Admin{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+{% endblock %}
+
+{% block content %}
+
+<section class="admin-section">
+
+    <div class="admin-container">
+
+        <div class="admin-header">
+            <h1>Order #{{ order.id }}</h1>
+            <p>Detailed order overview</p>
+        </div>
+
+        <!-- ORDER STATUS CARDS -->
+        <div class="admin-stats-grid">
+
+            <div class="admin-stat-card">
+                <h3>Payment Method</h3>
+                <p>{{ order.payment_method }}</p>
+            </div>
+
+            <div class="admin-stat-card {% if order.payment_status != 'PAID' %}warning{% endif %}">
+                <h3>Payment Status</h3>
+                <p>{{ order.payment_status }}</p>
+            </div>
+
+            <div class="admin-stat-card">
+                <h3>Order Status</h3>
+                <p>{{ order.order_status }}</p>
+            </div>
+
+        </div>
+
+        <!-- CUSTOMER DETAILS -->
+        <div class="admin-card" style="margin-top:30px;">
+            <h2>Customer Details</h2>
+
+            <p><strong>Name:</strong> {{ order.full_name }}</p>
+            <p><strong>Email:</strong> {{ order.customer_email }}</p>
+            <p><strong>Phone:</strong> {{ order.phone }}</p>
+        </div>
+
+        <!-- SHIPPING ADDRESS -->
+        <div class="admin-card" style="margin-top:30px;">
+            <h2>Shipping Address</h2>
+
+            <p>
+                {{ order.address }}<br>
+                {{ order.city }}, {{ order.state }}<br>
+                Pincode: {{ order.pincode }}
+            </p>
+        </div>
+
+        <!-- ORDER ITEMS -->
+        <div class="admin-table-section" style="margin-top:30px;">
+
+            <h2>Items</h2>
+
+            <div class="table-wrapper">
+                <table class="admin-table">
+
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Qty</th>
+                            <th>Price</th>
+                            <th>Subtotal</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for item in items %}
+                        <tr>
+                            <td>{{ item.product_name }}</td>
+                            <td>{{ item.quantity }}</td>
+                            <td>₹ {{ item.price }}</td>
+                            <td>₹ {{ item.quantity * item.price }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+
+                </table>
+            </div>
+
+            <div class="order-total" style="margin-top:20px; font-size:20px;">
+                <strong>Total: ₹ {{ order.total_amount }}</strong>
+            </div>
+
+        </div>
+        {% if order.id %}
+            <a href="{{ url_for('static', filename='invoices/invoice_' ~ order.id ~ '.pdf') }}"
+            class="btn-primary"
+            target="_blank">
+            Download Invoice
+            </a>
+        {% endif %}
+
+
+        <div style="margin-top:30px;">
+            <a href="{{ url_for('admin.view_orders') }}" class="edit-link">
+                ← Back to Orders
+            </a>
+        </div>
+
+    </div>
+
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+{% endblock %}

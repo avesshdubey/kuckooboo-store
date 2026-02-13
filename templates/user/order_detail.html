@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}My Order #{{ order.id }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/order_detail.css') }}">
+{% endblock %}
+
+{% block content %}
+
+<section class="order-detail-section">
+
+    <div class="order-header">
+        <h1>Order #{{ order.id }}</h1>
+
+        <div class="order-meta">
+            <span class="status-badge order-status">
+                {{ order.order_status }}
+            </span>
+
+            <span class="status-badge
+                {% if order.payment_status == 'PAID' %}
+                    paid
+                {% else %}
+                    pending
+                {% endif %}
+            ">
+                {{ order.payment_status }}
+            </span>
+
+            <span class="payment-method">
+                {{ order.payment_method }}
+            </span>
+        </div>
+    </div>
+
+    <div class="table-wrapper">
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Qty</th>
+                    <th>Price</th>
+                    <th>Subtotal</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td>{{ item.product_name }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>₹ {{ item.price }}</td>
+                    <td>₹ {{ item.quantity * item.price }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="order-total">
+        <strong>Total: ₹ {{ order.total_amount }}</strong>
+    </div>
+
+    <!-- Cancel Order Button (Only for PLACED or CONFIRMED) -->
+    {% if order.order_status in ["PLACED", "CONFIRMED"] %}
+    <div class="cancel-order-section">
+        <form method="POST"
+              action="{{ url_for('user.cancel_order', order_id=order.id) }}">
+            <button type="submit"
+                    style="background:red;color:white;padding:10px 20px;border:none;border-radius:6px;cursor:pointer;">
+                Cancel Order
+            </button>
+        </form>
+    </div>
+    {% endif %}
+
+    <div class="back-link">
+        <a href="{{ url_for('user.my_orders') }}">
+            ← Back to orders
+        </a>
+    </div>
+
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/order_detail.js') }}"></script>
+{% endblock %}

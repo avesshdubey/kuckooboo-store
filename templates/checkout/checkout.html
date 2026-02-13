@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+
+{% block title %}Checkout | Kuckoo Boo & mama!{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/checkout.css') }}">
+{% endblock %}
+
+{% block content %}
+
+<section class="checkout-section">
+
+    <h1>Checkout</h1>
+
+    <div class="checkout-grid">
+
+        <!-- LEFT SIDE: FORM -->
+        <div class="checkout-form-area">
+
+            <form method="POST" action="{{ url_for('checkout.place_order') }}">
+
+                <!-- Hidden Token -->
+                <input type="hidden" name="checkout_token" value="{{ checkout_token }}">
+
+                <h3>Shipping Details</h3>
+
+                <!-- Full Name -->
+                <div class="form-group">
+                    <label for="full_name">Full Name</label>
+                    <input 
+                        type="text"
+                        id="full_name"
+                        name="full_name"
+                        placeholder="Enter your full name"
+                        required
+                    >
+                </div>
+
+                <!-- Phone -->
+                <div class="form-group">
+                    <label for="phone">Phone Number</label>
+                    <input 
+                        type="tel"
+                        id="phone"
+                        name="phone"
+                        placeholder="9876543210"
+                        required
+                    >
+                </div>
+
+                <!-- Address -->
+                <div class="form-group">
+                    <label for="address">Address</label>
+                    <textarea 
+                        id="address"
+                        name="address"
+                        rows="3"
+                        placeholder="House no, Street, Area"
+                        required
+                    ></textarea>
+                </div>
+
+                <!-- City + State -->
+                <div class="form-row">
+
+                    <div class="form-group">
+                        <label for="city">City</label>
+                        <input 
+                            type="text"
+                            id="city"
+                            name="city"
+                            placeholder="Enter city"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="state">State</label>
+                        <input 
+                            type="text"
+                            id="state"
+                            name="state"
+                            placeholder="Enter state"
+                            required
+                        >
+                    </div>
+
+                </div>
+
+                <!-- Pincode -->
+                <div class="form-group">
+                    <label for="pincode">Pincode</label>
+                    <input 
+                        type="text"
+                        id="pincode"
+                        name="pincode"
+                        placeholder="6-digit pincode"
+                        required
+                    >
+                </div>
+
+                <h3>Payment Method</h3>
+
+                <div class="payment-options">
+
+                    <div class="radio-option">
+                        <input 
+                            type="radio"
+                            id="cod"
+                            name="payment_method"
+                            value="COD"
+                            required
+                        >
+                        <label for="cod">Cash on Delivery</label>
+                    </div>
+
+                    <div class="radio-option">
+                        <input 
+                            type="radio"
+                            id="RAZORPAY"
+                            name="payment_method"
+                            value="RAZORPAY"
+                            required
+                        >
+                        <label for="RAZORPAY">Online pay</label>
+                    </div>
+
+                </div>
+
+                <!-- Notes -->
+                <div class="form-group">
+                    <label for="notes">Notes (optional)</label>
+                    <textarea 
+                        id="notes"
+                        name="notes"
+                        placeholder="Any delivery instructions?"
+                    ></textarea>
+                </div>
+
+                <button type="submit" class="btn-checkout">
+                    Place Order
+                </button>
+
+            </form>
+
+        </div>
+
+        <!-- RIGHT SIDE: SUMMARY -->
+        <div class="checkout-summary">
+
+            <h3>Order Summary</h3>
+
+            <div class="summary-total">
+                <span>Total:</span>
+                <strong>₹ {{ total }}</strong>
+            </div>
+
+            <p class="summary-note">
+                Secure checkout • Safe payment • Fast processing
+            </p>
+
+        </div>
+
+    </div>
+
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/checkout.js') }}"></script>
+{% endblock %}

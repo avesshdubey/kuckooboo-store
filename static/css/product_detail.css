@@ -1,0 +1,135 @@
+.product-detail-section {
+    padding: 60px 0;
+}
+
+.product-detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    align-items: center;
+}
+
+/* IMAGE SIDE */
+
+.product-image-area {
+    position: relative;
+}
+
+.badge-new {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    background: #f6b6c7;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    z-index: 2;
+}
+
+.image-wrapper {
+    border-radius: 25px;
+    overflow: hidden;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.05);
+}
+
+.image-wrapper img {
+    width: 100%;
+    height: 450px;
+    object-fit: cover;
+}
+
+/* INFO SIDE */
+
+.product-title {
+    font-size: 34px;
+    margin-bottom: 15px;
+}
+
+.product-description {
+    color: #666;
+    margin-bottom: 20px;
+    line-height: 1.6;
+}
+
+.product-price {
+    font-size: 28px;
+    font-weight: 800;
+    color: #e89ab0;
+    margin-bottom: 15px;
+}
+
+.in-stock {
+    color: #1a7f37;
+    margin-bottom: 20px;
+}
+
+.out-of-stock {
+    color: #d93025;
+    margin-bottom: 20px;
+}
+
+.btn-primary {
+    width: 100%;
+    padding: 12px;
+    border-radius: 30px;
+    border: none;
+    background: #f6b6c7;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn-primary:hover {
+    background: #e89ab0;
+}
+
+.btn-disabled {
+    width: 100%;
+    padding: 12px;
+    border-radius: 30px;
+    border: none;
+    background: #ddd;
+}
+
+.login-message a {
+    color: #e89ab0;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+/* ADMIN */
+
+.admin-panel {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+}
+
+.admin-actions {
+    margin-top: 10px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.btn-delete {
+    background: #ff6b6b;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 15px;
+    color: white;
+    cursor: pointer;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 900px) {
+    .product-detail-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .image-wrapper img {
+        height: 350px;
+    }
+}

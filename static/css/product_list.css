@@ -1,0 +1,135 @@
+.shop-header {
+    text-align: center;
+    padding: 50px 0 30px 0;
+}
+
+.shop-header h1 {
+    font-size: 36px;
+    margin-bottom: 10px;
+}
+
+.shop-header p {
+    color: #666;
+}
+
+/* GRID */
+
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+    gap: 30px;
+}
+
+/* CARD */
+
+.product-card {
+    background: white;
+    border-radius: 25px;
+    overflow: hidden;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.05);
+    position: relative;
+    transition: 0.3s ease;
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+}
+
+.badge-new {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    background: #f6b6c7;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/* IMAGE */
+
+.image-wrapper {
+    height: 250px;
+    overflow: hidden;
+}
+
+.image-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* INFO */
+
+.product-info {
+    padding: 20px;
+}
+
+.product-title {
+    margin-bottom: 10px;
+}
+
+.product-title a {
+    text-decoration: none;
+    color: #222;
+}
+
+.product-price {
+    font-size: 20px;
+    font-weight: 800;
+    color: #e89ab0;
+    margin-bottom: 10px;
+}
+
+.in-stock {
+    color: #1a7f37;
+    font-size: 14px;
+}
+
+.out-of-stock {
+    color: #d93025;
+    font-size: 14px;
+}
+
+.btn-primary {
+    width: 100%;
+    padding: 10px;
+    border-radius: 30px;
+    border: none;
+    background: #f6b6c7;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.btn-primary:hover {
+    background: #e89ab0;
+}
+
+.btn-disabled {
+    width: 100%;
+    padding: 10px;
+    border-radius: 30px;
+    border: none;
+    background: #ddd;
+}
+
+.admin-actions {
+    margin-top: 10px;
+    display: flex;
+    gap: 10px;
+}
+
+.btn-delete {
+    background: #ff6b6b;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 15px;
+    color: white;
+    cursor: pointer;
+}
+
+.no-products {
+    text-align: center;
+    margin-top: 20px;
+}

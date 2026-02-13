@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}My Account{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+{% endblock %}
+
+{% block content %}
+
+<section class="dashboard-section">
+
+    <div class="dashboard-header">
+        <h1>My Account</h1>
+        <p>Manage your orders and account details.</p>
+    </div>
+    
+
+
+    <div class="dashboard-links">
+        <a href="{{ url_for('user.my_orders') }}" class="dashboard-card">
+            📦 View All Orders
+        </a>
+    </div>
+
+    <div class="recent-orders">
+        <h2>Recent Orders</h2>
+
+        {% if orders %}
+        <div class="table-wrapper">
+            <table class="orders-table">
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Total</th>
+                        <th>Payment</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for order in orders %}
+                    <tr>
+                        <td>
+                            <a href="{{ url_for('user.order_detail', order_id=order.id) }}">
+                                #{{ order.id }}
+                            </a>
+                        </td>
+                        <td>₹ {{ order.total_amount }}</td>
+                        <td>{{ order.payment_method }}</td>
+                        <td>
+                            <span class="status-badge
+                                {% if order.payment_status == 'PAID' %}
+                                    paid
+                                {% else %}
+                                    pending
+                                {% endif %}
+                            ">
+                                {{ order.payment_status }}
+                            </span>
+                        </td>
+                        <td>{{ order.created_at }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+            <p class="no-orders">You have not placed any orders yet.</p>
+        {% endif %}
+    </div>
+
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,228 @@
+{% extends "base.html" %}
+
+{% block title %}{{ product.name }} | Kuckoo Boo & mama!{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/product_detail.css') }}">
+{% endblock %}
+
+{% block content %}
+
+<section class="product-detail-section">
+
+    <div class="product-detail-grid">
+
+        <!-- LEFT: IMAGE -->
+        <div class="product-image-area">
+
+            {% if product.is_new %}
+                <span class="badge-new">NEW</span>
+            {% endif %}
+
+            {% if product.image %}
+                <div class="image-wrapper">
+                    <img
+                        src="{{ url_for('static', filename='uploads/' ~ product.image) }}"
+                        alt="{{ product.name }} product image"
+                        title="{{ product.name }}"
+                        loading="lazy"
+                    >
+                </div>
+            {% endif %}
+
+        </div>
+
+        <!-- RIGHT: INFO -->
+        <div class="product-info-area">
+
+            <h1 class="product-title">
+                {{ product.name }}
+            </h1>
+
+            <p class="product-description">
+                {{ product.description }}
+            </p>
+
+            <p class="product-price">
+                ₹ {{ product.price }}
+            </p>
+
+            <!-- ⭐ RATING SUMMARY -->
+            <div class="rating-summary">
+                <strong>⭐ {{ avg_rating }} / 5</strong>
+                <span>({{ total_reviews }} reviews)</span>
+            </div>
+
+            {% if product.stock > 0 %}
+                <p class="in-stock">
+                    Available: {{ product.stock }}
+                </p>
+            {% else %}
+                <p class="out-of-stock">
+                    Out of stock
+                </p>
+            {% endif %}
+
+            <!-- ADD TO CART -->
+            {% if session.get("user_id") %}
+                {% if product.stock > 0 %}
+                    <form
+                        method="POST"
+                        action="{{ url_for('cart.add_to_cart', product_id=product.id) }}"
+                    >
+                        <button type="submit" class="btn-primary">
+                            Add to Cart
+                        </button>
+                    </form>
+                {% else %}
+                    <button disabled class="btn-disabled">
+                        Out of Stock
+                    </button>
+                {% endif %}
+            {% else %}
+                <p class="login-message">
+                    <a href="{{ url_for('auth.login') }}">Login</a> to purchase
+                </p>
+            {% endif %}
+
+            <!-- ADMIN CONTROLS -->
+            {% if session.get("is_admin") %}
+                <div class="admin-panel">
+                    <strong>Admin Controls</strong>
+
+                    <div class="admin-actions">
+                        <a href="{{ url_for('admin.edit_product', product_id=product.id) }}">
+                            Edit Product
+                        </a>
+
+                        <form
+                            method="POST"
+                            action="{{ url_for('admin.delete_product', product_id=product.id) }}"
+                            onsubmit="return confirm('Delete this product permanently?');"
+                        >
+                            <button type="submit" class="btn-delete">
+                                Delete
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            {% endif %}
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =========================
+     REVIEW SECTION
+========================= -->
+
+<section class="review-section">
+
+    <h2>Customer Reviews</h2>
+
+    {% if reviews %}
+        <div class="review-list">
+            {% for review in reviews %}
+                <div class="review-card">
+
+                    <div class="review-header">
+                        <strong>{{ review.user_name }}</strong>
+                        <span>⭐ {{ review.rating }} / 5</span>
+                    </div>
+
+                    {% if review.review_text %}
+                        <p class="review-text">
+                            {{ review.review_text }}
+                        </p>
+                    {% endif %}
+
+                    {% if review.media_type == "image" %}
+                        <img
+                            src="{{ url_for('static', filename='review_uploads/' ~ review.media_file) }}"
+                            alt="Review image uploaded by {{ review.user_name }}"
+                            class="review-media"
+                            loading="lazy"
+                        >
+                    {% endif %}
+
+                    {% if review.media_type == "video" %}
+                        <video controls class="review-media">
+                            <source
+                                src="{{ url_for('static', filename='review_uploads/' ~ review.media_file) }}"
+                            >
+                            Your browser does not support video playback.
+                        </video>
+                    {% endif %}
+
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>No reviews yet.</p>
+    {% endif %}
+
+    <hr>
+
+    <!-- ADD REVIEW FORM (STRICT VERIFIED BUYER LOGIC) -->
+    {% if can_review %}
+        <div class="add-review-box">
+            <h3>Write a Review</h3>
+
+            <form
+                method="POST"
+                action="{{ url_for('shop.add_review', product_id=product.id) }}"
+                enctype="multipart/form-data"
+            >
+
+                <label for="rating">Rating</label><br>
+                <select id="rating" name="rating" required>
+                    <option value="">Select Rating</option>
+                    <option value="5">5 - Excellent</option>
+                    <option value="4">4 - Very Good</option>
+                    <option value="3">3 - Good</option>
+                    <option value="2">2 - Average</option>
+                    <option value="1">1 - Poor</option>
+                </select>
+                <br><br>
+
+                <label for="review_text">Your Review</label><br>
+                <textarea
+                    id="review_text"
+                    name="review_text"
+                    rows="4"
+                    placeholder="Write your experience with this product"
+                ></textarea>
+                <br><br>
+
+                <label for="media">Upload Image or Video (optional)</label><br>
+                <input
+                    type="file"
+                    id="media"
+                    name="media"
+                    accept="image/*,video/*"
+                >
+                <br><br>
+
+                <button type="submit" class="btn-primary">
+                    Submit Review
+                </button>
+
+            </form>
+        </div>
+
+    {% else %}
+        <p>
+            Only customers who purchased and received this product can leave a review.
+        </p>
+    {% endif %}
+
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/product_detail.js') }}"></script>
+{% endblock %}

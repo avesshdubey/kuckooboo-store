@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block title %}Search | Kuckoo Boo & mama!{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/search.css') }}">
+{% endblock %}
+
+{% block content %}
+
+<section class="search-header">
+    <h1>Search Results</h1>
+
+    {% if query %}
+        <p class="search-query">
+            Results for: <strong>{{ query }}</strong>
+        </p>
+    {% endif %}
+</section>
+
+{% if products %}
+<div class="product-grid">
+
+    {% for product in products %}
+    <div class="product-card">
+
+        {% if product.is_new %}
+            <span class="badge-new">NEW</span>
+        {% endif %}
+
+        {% if product.image %}
+        <div class="image-wrapper">
+            <img
+                src="{{ url_for('static', filename='uploads/' ~ product.image) }}"
+                alt="{{ product.name }}"
+                loading="lazy"
+            >
+        </div>
+        {% endif %}
+
+        <div class="product-info">
+
+            <h3 class="product-title">
+                <a href="{{ url_for('shop.product_detail', product_id=product.id) }}">
+                    {{ product.name }}
+                </a>
+            </h3>
+
+            <p class="product-description">
+                {{ product.description }}
+            </p>
+
+            <p class="product-price">
+                ₹ {{ product.price }}
+            </p>
+
+            {% if product.stock > 0 %}
+                <span class="in-stock">In stock</span>
+            {% else %}
+                <span class="out-of-stock">Out of stock</span>
+            {% endif %}
+
+            {% if session.get("user_id") %}
+                {% if product.stock > 0 %}
+                <form
+                    method="POST"
+                    action="{{ url_for('cart.add_to_cart', product_id=product.id) }}"
+                >
+                    <button type="submit" class="btn-primary">
+                        Add to Cart
+                    </button>
+                </form>
+                {% else %}
+                    <button disabled class="btn-disabled">
+                        Out of Stock
+                    </button>
+                {% endif %}
+            {% endif %}
+
+            {% if session.get("is_admin") %}
+            <div class="admin-actions">
+                <a href="{{ url_for('admin.edit_product', product_id=product.id) }}">
+                    Edit
+                </a>
+
+                <form
+                    method="POST"
+                    action="{{ url_for('admin.delete_product', product_id=product.id) }}"
+                    onsubmit="return confirm('Delete this product permanently?');"
+                >
+                    <button type="submit" class="btn-delete">
+                        Delete
+                    </button>
+                </form>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+    {% endfor %}
+
+</div>
+{% else %}
+    <p class="no-results">No products found.</p>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/search.js') }}"></script>
+{% endblock %}

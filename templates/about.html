@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}About Us{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/about.css') }}">
+{% endblock %}
+
+{% block content %}
+
+<section class="about-hero">
+    <div class="about-hero-content">
+        <h1>Gentle on Skin, Kind to Earth</h1>
+        <p>
+            At Kuckoo Boo & mama!, we believe babies deserve the softest touch.
+            Our essentials are thoughtfully designed using premium organic fabrics
+            that care for delicate skin and the planet.
+        </p>
+    </div>
+</section>
+
+<section class="about-story container">
+    <div class="about-grid">
+
+        <div class="about-text">
+            <h2>Our Story</h2>
+            <p>
+                What started as a simple idea — to create safer, softer clothing
+                for little ones — has grown into a brand trusted by families.
+            </p>
+            <p>
+                Every product we create is carefully crafted with comfort,
+                durability, and sustainability in mind.
+            </p>
+        </div>
+
+        <div class="about-values">
+            <div class="value-card">
+                <h3>Premium Quality</h3>
+                <p>Certified organic cotton that gets softer with every wash.</p>
+            </div>
+
+            <div class="value-card">
+                <h3>Eco-Friendly</h3>
+                <p>Sustainable production processes that respect our planet.</p>
+            </div>
+
+            <div class="value-card">
+                <h3>Safe & Non-Toxic</h3>
+                <p>Free from harmful chemicals, safe for sensitive skin.</p>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/about.js') }}"></script>
+{% endblock %}

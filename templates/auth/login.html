@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}Login | Kuckoo Boo & mama!{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+{% endblock %}
+
+{% block content %}
+
+<section class="auth-section">
+
+    <div class="auth-card">
+
+        <h2>Welcome Back</h2>
+
+        <p class="auth-subtext">
+            Login to access your account and manage your orders.
+        </p>
+
+        <form method="POST" class="auth-form">
+
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    placeholder="Enter your email"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input
+                    type="password"
+                    id="password"
+                    name="password"
+                    placeholder="Enter your password"
+                    required
+                >
+            </div>
+
+            <div class="auth-links">
+                <a href="{{ url_for('auth.forgot_password') }}">
+                    Forgot Password?
+                </a>
+            </div>
+
+            <button type="submit" class="btn-primary">
+                Login
+            </button>
+
+        </form>
+
+        <div class="auth-footer">
+            <p>
+                Don’t have an account?
+                <a href="{{ url_for('auth.register') }}">Register</a>
+            </p>
+        </div>
+
+    </div>
+
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/auth.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,101 @@
+.order-detail-section {
+    padding: 50px 0;
+}
+
+/* HEADER */
+
+.order-header {
+    margin-bottom: 30px;
+}
+
+.order-header h1 {
+    font-size: 30px;
+    margin-bottom: 10px;
+}
+
+.order-meta {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.payment-method {
+    background: #eef7f6;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+}
+
+/* TABLE */
+
+.table-wrapper {
+    overflow-x: auto;
+}
+
+.items-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #ffffff;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.05);
+}
+
+.items-table th,
+.items-table td {
+    padding: 15px;
+    text-align: left;
+}
+
+.items-table thead {
+    background: #fdf1f5;
+}
+
+.items-table tbody tr {
+    border-top: 1px solid #eee;
+}
+
+/* STATUS BADGES */
+
+.status-badge {
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.status-badge.paid {
+    background: #e6f7ed;
+    color: #1a7f37;
+}
+
+.status-badge.pending {
+    background: #fdecea;
+    color: #d93025;
+}
+
+.order-status {
+    background: #eef7f6;
+    color: #333;
+}
+
+/* TOTAL */
+
+.order-total {
+    margin-top: 25px;
+    font-size: 20px;
+    font-weight: 800;
+    color: #e89ab0;
+}
+
+/* BACK LINK */
+
+.back-link {
+    margin-top: 20px;
+}
+
+.back-link a {
+    text-decoration: none;
+    color: #e89ab0;
+    font-weight: 600;
+}

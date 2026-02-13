@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}Pay via UPI | Kuckoo Boo & mama!{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/upi.css') }}">
+{% endblock %}
+
+{% block content %}
+
+<section class="upi-section">
+
+    <div class="upi-card">
+
+        <h1>Complete Your Payment</h1>
+
+        <p class="upi-subtext">
+            Securely pay using any UPI app.
+        </p>
+
+        <div class="upi-amount">
+            <span>Total Amount</span>
+            <strong>₹ {{ total }}</strong>
+        </div>
+
+        <!-- UPI Deep Link -->
+        <a
+            href="upi://pay?pa={{ upi_id }}&pn={{ merchant_name }}&am={{ total }}&cu=INR"
+            class="btn-upi"
+        >
+            💳 Pay Now via UPI App
+        </a>
+
+        <div class="upi-divider"></div>
+
+        <h3>On Desktop?</h3>
+        <p>Scan this QR code using your UPI app:</p>
+
+        <div class="qr-wrapper">
+            <img
+                src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=upi://pay?pa={{ upi_id }}&pn={{ merchant_name }}&am={{ total }}&cu=INR"
+                alt="UPI QR Code"
+            >
+        </div>
+
+        <div class="upi-info">
+            <h3>What happens next?</h3>
+            <ul>
+                <li>As you made the payment order is already placed</li>
+                <li>Payment status is <strong>PENDING</strong></li>
+                <li>We confirm payment within <strong>2–4 hours</strong></li>
+            </ul>
+        </div>
+
+        <div class="support-section">
+            <p>If payment is successful but not confirmed yet, no action is needed.</p>
+
+            <p>
+                For faster confirmation, send:
+                <strong>Order ID</strong> + <strong>UPI Transaction ID</strong>
+            </p>
+
+            <p class="support-links">
+                📧 
+                <a href="mailto:support@kuckooboo.com">
+                    support@kuckooboo.com
+                </a>
+                <br>
+                📱 
+                <a href="https://wa.me/91XXXXXXXXXX"
+                   target="_blank"
+                   rel="noopener noreferrer">
+                    +91XXXXXXXXXX
+                </a>
+            </p>
+        </div>
+
+        <a href="{{ url_for('shop.home') }}" class="back-home">
+            ← Back to Home
+        </a>
+
+    </div>
+
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/upi.js') }}"></script>
+{% endblock %}

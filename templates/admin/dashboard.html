@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+{% endblock %}
+
+{% block content %}
+
+<section class="admin-section">
+
+    <div class="admin-container">
+
+        <!-- HEADER -->
+        <div class="admin-header">
+            <h1>Admin Dashboard</h1>
+            <p>Overview of store performance and inventory status.</p>
+        </div>
+
+        <!-- PRIMARY STATS -->
+        <div class="admin-stats-grid">
+            <div class="admin-stat-card">
+                <h3>Total Orders</h3>
+                <p>{{ total_orders }}</p>
+            </div>
+
+            <div class="admin-stat-card">
+                <h3>Total Revenue</h3>
+                <p>₹ {{ total_revenue }}</p>
+            </div>
+
+            <div class="admin-stat-card warning">
+                <h3>Pending UPI Payments</h3>
+                <p>{{ pending_upi }}</p>
+            </div>
+        </div>
+
+        <!-- REVENUE COMPARISON -->
+        <div class="admin-overview-section">
+            <h2>Revenue Comparison</h2>
+            <div class="admin-overview-grid">
+                <div class="overview-card">
+                    This Month
+                    <span>₹ {{ current_month_revenue }}</span>
+                </div>
+                <div class="overview-card">
+                    Last Month
+                    <span>₹ {{ last_month_revenue }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- CANCELLATION RATE -->
+        <div class="admin-overview-section">
+            <h2>Cancellation Rate</h2>
+            <div class="overview-card danger">
+                {{ cancellation_rate }} %
+            </div>
+        </div>
+
+        <!-- ORDER STATUS OVERVIEW -->
+        <div class="admin-overview-section">
+            <h2>Order Status Overview</h2>
+            <div class="admin-overview-grid">
+                <div class="overview-card">Placed <span>{{ placed_orders }}</span></div>
+                <div class="overview-card">Confirmed <span>{{ confirmed_orders }}</span></div>
+                <div class="overview-card">Shipped <span>{{ shipped_orders }}</span></div>
+                <div class="overview-card">In Transit <span>{{ in_transit_orders }}</span></div>
+                <div class="overview-card">Delivered <span>{{ delivered_orders }}</span></div>
+                <div class="overview-card danger">Cancelled <span>{{ cancelled_orders }}</span></div>
+            </div>
+        </div>
+
+        <!-- INVENTORY OVERVIEW -->
+        <div class="admin-overview-section">
+            <h2>Inventory Overview</h2>
+            <div class="admin-overview-grid">
+                <div class="overview-card">Total Products <span>{{ total_products }}</span></div>
+                <div class="overview-card">Total Stock Units <span>{{ total_stock_units }}</span></div>
+                <div class="overview-card warning">Out of Stock <span>{{ out_of_stock }}</span></div>
+            </div>
+        </div>
+
+        <!-- TOP SELLING PRODUCTS -->
+        <div class="admin-overview-section">
+            <h2>Top Selling Products</h2>
+
+            {% if top_products %}
+        <ul class="top-products-list">{% for product in top_products %}<li>{{ product.product_name }} <span>({{ product.total_sold }} sold)</span></li>{% endfor %}</ul>
+            {% else %}
+            <p class="success-text">No sales data available.</p>
+            {% endif %}
+
+        </div>
+
+
+        <!-- DAILY SALES GRAPH -->
+        <div class="admin-overview-section">
+            <h2>Daily Revenue Trend</h2>
+            <div class="chart-container">
+                <canvas id="salesChart"></canvas>
+            </div>
+        </div>
+
+        <!-- LOW STOCK SECTION -->
+        <div class="admin-table-section">
+            <h2>Low Stock Products</h2>
+
+            {% if low_stock_products %}
+            <div class="table-wrapper">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Stock</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for product in low_stock_products %}
+                        <tr>
+                            <td>{{ product.name }}</td>
+                            <td>
+                                <span class="stock-badge">
+                                    {{ product.stock }}
+                                </span>
+                            </td>
+                            <td>
+                                <a href="{{ url_for('admin.edit_product', product_id=product.id) }}"
+                                   class="edit-link">
+                                    Edit
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+                <p class="success-text">All products have sufficient stock.</p>
+            {% endif %}
+        </div>
+
+    </div>
+
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script type="application/json" id="daily-sales-data">
+{{ daily_sales | tojson }}
+</script>
+
+<script src="{{ url_for('static', filename='js/admin_dashboard.js') }}"></script>
+{% endblock %}

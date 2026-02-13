@@ -1,0 +1,19 @@
+from database.db import get_db_connection
+
+conn = get_db_connection()
+cursor = conn.cursor()
+
+try:
+    cursor.execute("ALTER TABLE users ADD COLUMN reset_token TEXT")
+except Exception:
+    pass
+
+try:
+    cursor.execute("ALTER TABLE users ADD COLUMN reset_token_expiry INTEGER")
+except Exception:
+    pass
+
+conn.commit()
+conn.close()
+
+print("✅ Migration completed")

@@ -1,0 +1,257 @@
+{% extends "base.html" %}
+
+{% block title %}Home | Kuckoo Boo & mama!{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
+{% endblock %}
+
+{% block content %}
+
+<!-- ===================================================== -->
+<!-- HERO SECTION -->
+<!-- ===================================================== -->
+<section class="home-hero">
+    <div class="hero-content">
+        <h1>Premium Essentials for Babies & Kids</h1>
+        <p>Thoughtfully crafted products made with love and care.</p>
+
+        <a href="#products" class="btn-primary">
+            Shop Now
+        </a>
+    </div>
+</section>
+
+
+<!-- ===================================================== -->
+<!-- PRODUCTS SECTION -->
+<!-- ===================================================== -->
+<section id="products" class="home-products">
+
+    <div class="section-header">
+        <h2>Our Products</h2>
+    </div>
+
+    {% if session.get("cart_error") %}
+        <p class="error-message">
+            {{ session.pop("cart_error") }}
+        </p>
+    {% endif %}
+
+
+    <!-- CATEGORY PILL FILTER -->
+    {% if categories %}
+    <div class="category-filter">
+
+        <a
+            href="{{ url_for('shop.home') }}"
+            class="{% if not selected_category %}active{% endif %}"
+        >
+            All
+        </a>
+
+        {% for cat in categories %}
+            <a
+                href="{{ url_for('shop.home', category=cat.category) }}"
+                class="{% if selected_category == cat.category %}active{% endif %}"
+            >
+                {{ cat.category }}
+            </a>
+        {% endfor %}
+
+    </div>
+    {% endif %}
+
+
+    <!-- SEARCH + SORTING FORM -->
+    <div class="sorting-bar">
+        <form method="get" class="sorting-form">
+
+            <!-- Search Input -->
+            <input type="text"
+                   name="search"
+                   placeholder="Search..."
+                   value="{{ search_query }}">
+
+            <!-- Category Dropdown -->
+            <label for="category-select" class="sr-only">
+                Filter by Category
+            </label>
+            <select id="category-select" name="category">
+                <option value="">All Categories</option>
+                {% for cat in categories %}
+                    <option value="{{ cat.category }}"
+                        {% if selected_category == cat.category %}selected{% endif %}>
+                        {{ cat.category }}
+                    </option>
+                {% endfor %}
+            </select>
+
+            <!-- Sorting Dropdown -->
+            <label for="sort-select" class="sr-only">
+                Sort Products
+            </label>
+            <select id="sort-select" name="sort">
+                <option value="">Newest</option>
+
+                <option value="price_low"
+                    {% if sort == "price_low" %}selected{% endif %}>
+                    Price: Low to High
+                </option>
+
+                <option value="price_high"
+                    {% if sort == "price_high" %}selected{% endif %}>
+                    Price: High to Low
+                </option>
+            </select>
+
+            <button type="submit" class="btn-apply">
+                Apply
+            </button>
+
+        </form>
+    </div>
+
+
+    <!-- PRODUCT GRID -->
+    {% if products %}
+    <div class="product-grid">
+
+        {% for product in products %}
+        <div class="product-card">
+
+            {% if product.is_new %}
+                <span class="badge-new">NEW</span>
+            {% endif %}
+
+            {% if product.image %}
+            <div class="image-wrapper">
+                <img
+                    src="{{ url_for('static', filename='uploads/' ~ product.image) }}"
+                    alt="{{ product.name }}"
+                    loading="lazy"
+                >
+            </div>
+            {% endif %}
+
+            <div class="product-info">
+
+                <h3 class="product-title">
+                    <a href="{{ url_for('shop.product_detail', product_id=product.id) }}">
+                        {{ product.name }}
+                    </a>
+                </h3>
+
+                <p class="product-description">
+                    {{ product.description }}
+                </p>
+
+                <p class="product-price">
+                    ₹ {{ product.price }}
+                </p>
+
+                {% if product.stock > 0 %}
+                    <span class="in-stock">
+                        In stock: {{ product.stock }}
+                    </span>
+                {% else %}
+                    <span class="out-of-stock">
+                        Out of stock
+                    </span>
+                {% endif %}
+
+                {% if session.get("user_id") and product.stock > 0 %}
+                    <form
+                        method="POST"
+                        action="{{ url_for('cart.add_to_cart', product_id=product.id) }}"
+                    >
+                        <button type="submit" class="btn-add-cart">
+                            Add to Cart
+                        </button>
+                    </form>
+                {% elif session.get("user_id") %}
+                    <button disabled class="btn-disabled">
+                        Out of Stock
+                    </button>
+                {% endif %}
+
+                {% if session.get("is_admin") %}
+                <div class="admin-actions">
+                    <a href="{{ url_for('admin.edit_product', product_id=product.id) }}">
+                        Edit
+                    </a>
+
+                    <form
+                        method="POST"
+                        action="{{ url_for('admin.delete_product', product_id=product.id) }}"
+                        onsubmit="return confirm('Delete this product permanently?');"
+                    >
+                        <button type="submit" class="btn-delete">
+                            Delete
+                        </button>
+                    </form>
+                </div>
+                {% endif %}
+
+            </div>
+
+        </div>
+        {% endfor %}
+
+    </div>
+
+
+    {% if total_pages > 1 %}
+    <div class="pagination">
+
+        {% if page > 1 %}
+            <a
+                href="{{ url_for('shop.home',
+                    search=search_query,
+                    category=selected_category,
+                    sort=sort,
+                    page=page-1) }}"
+                class="pagination-btn"
+            >
+                ← Previous
+            </a>
+        {% endif %}
+
+        <span class="pagination-info">
+            Page {{ page }} of {{ total_pages }}
+        </span>
+
+        {% if page < total_pages %}
+            <a
+                href="{{ url_for('shop.home',
+                    search=search_query,
+                    category=selected_category,
+                    sort=sort,
+                    page=page+1) }}"
+                class="pagination-btn"
+            >
+                Next →
+            </a>
+        {% endif %}
+
+    </div>
+    {% endif %}
+
+    {% else %}
+
+    <div class="empty-state">
+        <p>No products found.</p>
+        <a href="{{ url_for('shop.home') }}" class="btn-primary">
+            View All Products
+        </a>
+    </div>
+
+    {% endif %}
+
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/home.js') }}"></script>
+{% endblock %}

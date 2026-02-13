@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}Add Product | Admin{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+{% endblock %}
+
+{% block content %}
+
+<section class="admin-section">
+
+    <div class="admin-card">
+
+        <div class="admin-header">
+            <h2>Add Product</h2>
+            <p>Create a new product listing.</p>
+        </div>
+
+        <form method="POST" class="admin-form">
+
+            <!-- Product Name -->
+            <div class="form-group">
+                <label for="name">Product Name</label>
+                <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    placeholder="Enter product name"
+                    required
+                >
+            </div>
+
+            <!-- Price -->
+            <div class="form-group">
+                <label for="price">Price (₹)</label>
+                <input
+                    type="number"
+                    step="0.01"
+                    id="price"
+                    name="price"
+                    placeholder="Enter price in rupees"
+                    required
+                >
+            </div>
+
+            <!-- Stock -->
+            <div class="form-group">
+                <label for="stock">Stock Quantity</label>
+                <input
+                    type="number"
+                    id="stock"
+                    name="stock"
+                    placeholder="Enter available stock"
+                    required
+                >
+            </div>
+
+            <!-- Category -->
+            <div class="form-group">
+                <label for="category">Category</label>
+                <input
+                    type="text"
+                    id="category"
+                    name="category"
+                    placeholder="Example: Toys, Clothes, Books"
+                    required
+                >
+            </div>
+
+            <!-- Description -->
+            <div class="form-group">
+                <label for="description">Description</label>
+                <textarea
+                    id="description"
+                    name="description"
+                    rows="4"
+                    placeholder="Write product description"
+                ></textarea>
+            </div>
+
+            <button type="submit" class="btn-admin">
+                Add Product
+            </button>
+
+        </form>
+
+    </div>
+
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+{% endblock %}

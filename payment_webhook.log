@@ -1,0 +1,73 @@
+2026-02-13 23:35:17,165 INFO: [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2026-02-13 23:35:17,165 INFO: [33mPress CTRL+C to quit[0m
+2026-02-13 23:35:17,167 INFO:  * Restarting with stat
+2026-02-13 23:35:17,888 WARNING:  * Debugger is active!
+2026-02-13 23:35:17,902 INFO:  * Debugger PIN: 768-216-561
+2026-02-13 23:35:32,226 INFO: [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2026-02-13 23:35:32,226 INFO: [33mPress CTRL+C to quit[0m
+2026-02-13 23:35:32,228 INFO:  * Restarting with stat
+2026-02-13 23:35:32,724 WARNING:  * Debugger is active!
+2026-02-13 23:35:32,728 INFO:  * Debugger PIN: 768-216-561
+2026-02-13 23:35:49,305 INFO: [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2026-02-13 23:35:49,305 INFO: [33mPress CTRL+C to quit[0m
+2026-02-13 23:35:49,312 INFO:  * Restarting with stat
+2026-02-13 23:35:49,951 WARNING:  * Debugger is active!
+2026-02-13 23:35:49,954 INFO:  * Debugger PIN: 337-027-384
+2026-02-13 23:36:31,283 INFO: [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2026-02-13 23:36:31,284 INFO: [33mPress CTRL+C to quit[0m
+2026-02-13 23:36:31,299 INFO:  * Restarting with stat
+2026-02-13 23:36:33,935 WARNING:  * Debugger is active!
+2026-02-13 23:36:34,079 INFO:  * Debugger PIN: 337-027-384
+2026-02-13 23:37:19,855 INFO: 127.0.0.1 - - [13/Feb/2026 23:37:19] "GET / HTTP/1.1" 200 -
+2026-02-13 23:37:20,045 INFO: 127.0.0.1 - - [13/Feb/2026 23:37:20] "GET /static/css/home.css HTTP/1.1" 200 -
+2026-02-13 23:37:20,045 INFO: 127.0.0.1 - - [13/Feb/2026 23:37:20] "GET /static/css/base.css HTTP/1.1" 200 -
+2026-02-13 23:37:20,246 INFO: 127.0.0.1 - - [13/Feb/2026 23:37:20] "GET /static/js/base.js HTTP/1.1" 200 -
+2026-02-13 23:37:20,247 INFO: 127.0.0.1 - - [13/Feb/2026 23:37:20] "GET /static/images/LOGO.jpeg HTTP/1.1" 200 -
+2026-02-13 23:37:20,247 INFO: 127.0.0.1 - - [13/Feb/2026 23:37:20] "GET /static/js/home.js HTTP/1.1" 200 -
+2026-02-13 23:37:21,125 INFO: 127.0.0.1 - - [13/Feb/2026 23:37:21] "GET /static/uploads/1770825743_133773563355059162.jpg HTTP/1.1" 200 -
+2026-02-13 23:37:21,387 INFO: 127.0.0.1 - - [13/Feb/2026 23:37:21] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2026-02-13 23:37:41,463 INFO: 127.0.0.1 - - [13/Feb/2026 23:37:41] "GET /login HTTP/1.1" 200 -
+2026-02-13 23:37:41,697 INFO: 127.0.0.1 - - [13/Feb/2026 23:37:41] "GET /static/css/auth.css HTTP/1.1" 200 -
+2026-02-13 23:37:41,724 INFO: 127.0.0.1 - - [13/Feb/2026 23:37:41] "[36mGET /static/css/base.css HTTP/1.1[0m" 304 -
+2026-02-13 23:37:41,844 INFO: 127.0.0.1 - - [13/Feb/2026 23:37:41] "[36mGET /static/images/LOGO.jpeg HTTP/1.1[0m" 304 -
+2026-02-13 23:37:41,845 INFO: 127.0.0.1 - - [13/Feb/2026 23:37:41] "[36mGET /static/js/base.js HTTP/1.1[0m" 304 -
+2026-02-13 23:37:41,847 INFO: 127.0.0.1 - - [13/Feb/2026 23:37:41] "GET /static/js/auth.js HTTP/1.1" 200 -
+2026-02-13 23:38:19,491 INFO: 127.0.0.1 - - [13/Feb/2026 23:38:19] "[32mPOST /login HTTP/1.1[0m" 302 -
+2026-02-13 23:38:19,644 INFO: 127.0.0.1 - - [13/Feb/2026 23:38:19] "GET / HTTP/1.1" 200 -
+2026-02-13 23:38:20,015 INFO: 127.0.0.1 - - [13/Feb/2026 23:38:20] "[36mGET /static/css/base.css HTTP/1.1[0m" 304 -
+2026-02-13 23:38:20,018 INFO: 127.0.0.1 - - [13/Feb/2026 23:38:20] "[36mGET /static/js/base.js HTTP/1.1[0m" 304 -
+2026-02-13 23:38:20,018 INFO: 127.0.0.1 - - [13/Feb/2026 23:38:20] "[36mGET /static/css/home.css HTTP/1.1[0m" 304 -
+2026-02-13 23:38:20,022 INFO: 127.0.0.1 - - [13/Feb/2026 23:38:20] "[36mGET /static/images/LOGO.jpeg HTTP/1.1[0m" 304 -
+2026-02-13 23:38:20,027 INFO: 127.0.0.1 - - [13/Feb/2026 23:38:20] "[36mGET /static/js/home.js HTTP/1.1[0m" 304 -
+2026-02-13 23:38:20,264 INFO: 127.0.0.1 - - [13/Feb/2026 23:38:20] "[36mGET /static/uploads/1770825743_133773563355059162.jpg HTTP/1.1[0m" 304 -
+2026-02-13 23:38:26,339 INFO: 127.0.0.1 - - [13/Feb/2026 23:38:26] "[32mPOST /cart/add/2 HTTP/1.1[0m" 302 -
+2026-02-13 23:38:26,657 INFO: 127.0.0.1 - - [13/Feb/2026 23:38:26] "GET /cart/ HTTP/1.1" 200 -
+2026-02-13 23:38:27,032 INFO: 127.0.0.1 - - [13/Feb/2026 23:38:27] "[36mGET /static/css/base.css HTTP/1.1[0m" 304 -
+2026-02-13 23:38:27,037 INFO: 127.0.0.1 - - [13/Feb/2026 23:38:27] "[36mGET /static/images/LOGO.jpeg HTTP/1.1[0m" 304 -
+2026-02-13 23:38:27,038 INFO: 127.0.0.1 - - [13/Feb/2026 23:38:27] "[36mGET /static/js/base.js HTTP/1.1[0m" 304 -
+2026-02-13 23:38:27,038 INFO: 127.0.0.1 - - [13/Feb/2026 23:38:27] "GET /static/css/cart.css HTTP/1.1" 200 -
+2026-02-13 23:38:27,042 INFO: 127.0.0.1 - - [13/Feb/2026 23:38:27] "GET /static/js/cart.js HTTP/1.1" 200 -
+2026-02-13 23:38:29,302 INFO: 127.0.0.1 - - [13/Feb/2026 23:38:29] "GET /checkout/ HTTP/1.1" 200 -
+2026-02-13 23:38:29,595 INFO: 127.0.0.1 - - [13/Feb/2026 23:38:29] "[36mGET /static/css/base.css HTTP/1.1[0m" 304 -
+2026-02-13 23:38:29,682 INFO: 127.0.0.1 - - [13/Feb/2026 23:38:29] "[36mGET /static/js/base.js HTTP/1.1[0m" 304 -
+2026-02-13 23:38:29,687 INFO: 127.0.0.1 - - [13/Feb/2026 23:38:29] "GET /static/js/checkout.js HTTP/1.1" 200 -
+2026-02-13 23:38:29,687 INFO: 127.0.0.1 - - [13/Feb/2026 23:38:29] "GET /static/css/checkout.css HTTP/1.1" 200 -
+2026-02-13 23:38:29,690 INFO: 127.0.0.1 - - [13/Feb/2026 23:38:29] "[36mGET /static/images/LOGO.jpeg HTTP/1.1[0m" 304 -
+2026-02-13 23:38:40,899 INFO: 127.0.0.1 - - [13/Feb/2026 23:38:40] "[32mPOST /checkout/place-order HTTP/1.1[0m" 302 -
+2026-02-13 23:38:41,833 INFO: 127.0.0.1 - - [13/Feb/2026 23:38:41] "GET /payment/razorpay/33 HTTP/1.1" 200 -
+2026-02-13 23:38:41,905 INFO: 127.0.0.1 - - [13/Feb/2026 23:38:41] "[36mGET /static/css/base.css HTTP/1.1[0m" 304 -
+2026-02-13 23:38:42,214 INFO: 127.0.0.1 - - [13/Feb/2026 23:38:42] "[36mGET /static/images/LOGO.jpeg HTTP/1.1[0m" 304 -
+2026-02-13 23:38:42,216 INFO: 127.0.0.1 - - [13/Feb/2026 23:38:42] "[36mGET /static/js/base.js HTTP/1.1[0m" 304 -
+2026-02-13 23:39:34,446 INFO: 127.0.0.1 - - [13/Feb/2026 23:39:34] "GET / HTTP/1.1" 200 -
+2026-02-13 23:39:34,502 INFO: 127.0.0.1 - - [13/Feb/2026 23:39:34] "[36mGET /static/css/base.css HTTP/1.1[0m" 304 -
+2026-02-13 23:39:34,696 INFO: 127.0.0.1 - - [13/Feb/2026 23:39:34] "[36mGET /static/css/home.css HTTP/1.1[0m" 304 -
+2026-02-13 23:39:34,814 INFO: 127.0.0.1 - - [13/Feb/2026 23:39:34] "[36mGET /static/images/LOGO.jpeg HTTP/1.1[0m" 304 -
+2026-02-13 23:39:34,814 INFO: 127.0.0.1 - - [13/Feb/2026 23:39:34] "[36mGET /static/js/base.js HTTP/1.1[0m" 304 -
+2026-02-13 23:39:34,814 INFO: 127.0.0.1 - - [13/Feb/2026 23:39:34] "[36mGET /static/js/home.js HTTP/1.1[0m" 304 -
+2026-02-13 23:39:35,024 INFO: 127.0.0.1 - - [13/Feb/2026 23:39:35] "[36mGET /static/uploads/1770825743_133773563355059162.jpg HTTP/1.1[0m" 304 -
+2026-02-13 23:44:02,671 INFO:  * Detected change in 'c:\\Users\\avesh\\OneDrive\\Desktop\\Kuckoo\\routes\\payment.py', reloading
+2026-02-13 23:44:02,985 INFO:  * Restarting with stat

@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Secure Payment{% endblock %}
+
+{% block content %}
+
+<h2>Complete Your Payment</h2>
+<p>Order #{{ order.id }}</p>
+<p>Total: ₹ {{ order.total_amount }}</p>
+
+<button id="rzp-button">Pay Now</button>
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+<script>
+var options = {
+    "key": "{{ razorpay_key }}",
+    "amount": "{{ order.total_amount * 100 }}",
+    "currency": "INR",
+    "name": "Your Store",
+    "description": "Order #{{ order.id }}",
+    "order_id": "{{ razorpay_order_id }}",
+    "handler": function (response){
+        window.location.href = "{{ url_for('shop.home') }}";
+    },
+    "theme": {
+        "color": "#3399cc"
+    }
+};
+
+var rzp1 = new Razorpay(options);
+
+document.getElementById('rzp-button').onclick = function(e){
+    rzp1.open();
+    e.preventDefault();
+}
+</script>
+
+{% endblock %}

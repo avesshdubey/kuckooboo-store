@@ -1,0 +1,94 @@
+.upi-section {
+    padding: 70px 0;
+    display: flex;
+    justify-content: center;
+}
+
+.upi-card {
+    background: #ffffff;
+    padding: 40px;
+    border-radius: 30px;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.05);
+    max-width: 500px;
+    width: 100%;
+    text-align: center;
+}
+
+.upi-card h1 {
+    margin-bottom: 10px;
+}
+
+.upi-subtext {
+    color: #666;
+    margin-bottom: 25px;
+}
+
+.upi-amount {
+    margin-bottom: 25px;
+    font-size: 18px;
+}
+
+.upi-amount strong {
+    display: block;
+    font-size: 26px;
+    color: #e89ab0;
+    margin-top: 5px;
+}
+
+.btn-upi {
+    display: block;
+    padding: 12px;
+    border-radius: 30px;
+    background: #4CAF50;
+    color: #ffffff;
+    font-weight: 600;
+    text-decoration: none;
+    transition: 0.3s;
+    margin-bottom: 25px;
+}
+
+.btn-upi:hover {
+    background: #3e8e41;
+}
+
+.upi-divider {
+    height: 1px;
+    background: #eee;
+    margin: 25px 0;
+}
+
+.qr-wrapper img {
+    width: 220px;
+    height: 220px;
+    object-fit: contain;
+    margin: 15px auto;
+}
+
+.upi-info {
+    margin-top: 20px;
+    text-align: left;
+}
+
+.upi-info ul {
+    padding-left: 20px;
+}
+
+.support-section {
+    margin-top: 25px;
+    font-size: 14px;
+    color: #555;
+}
+
+.support-links a {
+    color: #e89ab0;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.back-home {
+    display: inline-block;
+    margin-top: 25px;
+    text-decoration: none;
+    color: #e89ab0;
+    font-weight: 600;
+}

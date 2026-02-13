@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Order Placed | Kuckoo Boo & mama!{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/success.css') }}">
+{% endblock %}
+
+{% block content %}
+
+<section class="success-section">
+
+    <div class="success-card">
+
+        <div class="success-icon">
+            ✓
+        </div>
+
+        <h1>Order Placed Successfully</h1>
+
+        <p class="success-message">
+            Thank you for shopping with Kuckoo Boo & mama!
+            Your order has been received and is being processed.
+        </p>
+
+        <div class="success-actions">
+            <a href="{{ url_for('shop.home') }}" class="btn-primary">
+                Continue Shopping
+            </a>
+
+            <a href="{{ url_for('user.my_orders') }}" class="btn-secondary">
+                View My Orders
+            </a>
+        </div>
+
+    </div>
+
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/success.js') }}"></script>
+{% endblock %}

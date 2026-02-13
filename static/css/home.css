@@ -1,0 +1,334 @@
+/* ===================================================== */
+/* HERO SECTION */
+/* ===================================================== */
+
+.home-hero {
+    padding: 60px 0 40px;
+    text-align: center;
+}
+
+.home-hero h1 {
+    font-size: 42px;
+    font-weight: 800;
+}
+
+.home-hero h1 span {
+    color: #e89ab0;
+}
+
+.home-hero p {
+    margin-top: 15px;
+    color: #666;
+}
+
+
+/* ===================================================== */
+/* SECTION HEADER */
+/* ===================================================== */
+
+.section-header {
+    margin: 40px 0 20px;
+    text-align: center;
+}
+
+.section-header h2 {
+    font-size: 28px;
+}
+
+
+/* ===================================================== */
+/* CATEGORY FILTER */
+/* ===================================================== */
+
+.category-filter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: center;
+    margin: 20px 0 40px;
+}
+
+.category-filter a {
+    padding: 8px 18px;
+    border-radius: 25px;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    background: #f5f5f5;
+    color: #333;
+    transition: 0.3s ease;
+}
+
+.category-filter a:hover {
+    background: #f6b6c7;
+}
+
+.category-filter a.active {
+    background: #f6b6c7;
+    color: #000;
+}
+
+
+/* ===================================================== */
+/* PRODUCT GRID */
+/* ===================================================== */
+
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+    gap: 30px;
+}
+
+
+/* ===================================================== */
+/* PRODUCT CARD */
+/* ===================================================== */
+
+.product-card {
+    background: #ffffff;
+    border-radius: 25px;
+    overflow: hidden;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.05);
+    position: relative;
+    transition: transform 0.3s ease;
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+}
+
+/* New Badge */
+.badge-new {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    background: #f6b6c7;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+
+/* ===================================================== */
+/* PRODUCT IMAGE */
+/* ===================================================== */
+
+.image-wrapper {
+    height: 260px;
+    overflow: hidden;
+}
+
+.image-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+
+/* ===================================================== */
+/* PRODUCT INFO */
+/* ===================================================== */
+
+.product-info {
+    padding: 20px;
+}
+
+.product-title {
+    font-size: 18px;
+    margin-bottom: 10px;
+}
+
+.product-title a {
+    text-decoration: none;
+    color: #222;
+}
+
+.product-description {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 10px;
+}
+
+.product-price {
+    font-size: 20px;
+    font-weight: 800;
+    color: #e89ab0;
+    margin-bottom: 10px;
+}
+
+.in-stock {
+    color: #1a7f37;
+    font-size: 14px;
+}
+
+.out-of-stock {
+    color: #d93025;
+    font-size: 14px;
+}
+
+
+/* ===================================================== */
+/* BUTTONS */
+/* ===================================================== */
+
+/* Add to cart button (scoped to home page) */
+.btn-add-cart {
+    width: 100%;
+    padding: 10px;
+    border-radius: 30px;
+    border: none;
+    background: #f6b6c7;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.btn-add-cart:hover {
+    background: #e89ab0;
+}
+
+.btn-disabled {
+    width: 100%;
+    padding: 10px;
+    border-radius: 30px;
+    border: none;
+    background: #ddd;
+    margin-top: 10px;
+}
+
+.btn-delete {
+    background: #ff6b6b;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 15px;
+    cursor: pointer;
+}
+
+
+/* ===================================================== */
+/* ADMIN CONTROLS */
+/* ===================================================== */
+
+.admin-actions {
+    margin-top: 10px;
+    display: flex;
+    gap: 10px;
+}
+
+
+/* ===================================================== */
+/* PAGINATION */
+/* ===================================================== */
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    margin-top: 50px;
+    flex-wrap: wrap;
+}
+
+.pagination-btn {
+    padding: 8px 18px;
+    border-radius: 25px;
+    text-decoration: none;
+    font-weight: 600;
+    background: #f5f5f5;
+    color: #333;
+    transition: 0.3s ease;
+}
+
+.pagination-btn:hover {
+    background: #f6b6c7;
+}
+
+.pagination-info {
+    font-size: 14px;
+    font-weight: 600;
+    color: #666;
+}
+
+
+/* ===================================================== */
+/* EMPTY STATE */
+/* ===================================================== */
+
+.empty-state {
+    text-align: center;
+    margin-top: 40px;
+}
+
+.no-products {
+    text-align: center;
+    margin-top: 20px;
+}
+
+
+/* ===================================================== */
+/* RESPONSIVE */
+/* ===================================================== */
+
+@media (max-width: 768px) {
+
+    .home-hero h1 {
+        font-size: 30px;
+    }
+
+    .section-header h2 {
+        font-size: 22px;
+    }
+
+    .image-wrapper {
+        height: 220px;
+    }
+
+}
+
+
+/* SORTING BAR */
+
+.sorting-bar {
+    margin-bottom: 30px;
+    display: flex;
+    justify-content: center;
+}
+
+.sorting-form {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.sorting-form input,
+.sorting-form select {
+    padding: 8px 12px;
+    border-radius: 20px;
+    border: 1px solid #ddd;
+}
+
+.btn-apply {
+    padding: 8px 18px;
+    border-radius: 20px;
+    border: none;
+    background: #f6b6c7;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.btn-apply:hover {
+    background: #e89ab0;
+}
+
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
+}

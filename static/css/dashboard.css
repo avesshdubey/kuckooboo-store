@@ -1,0 +1,99 @@
+.dashboard-section {
+    padding: 50px 0;
+}
+
+.dashboard-header {
+    margin-bottom: 30px;
+}
+
+.dashboard-header h1 {
+    font-size: 32px;
+    margin-bottom: 5px;
+}
+
+.dashboard-header p {
+    color: #666;
+}
+
+.dashboard-links {
+    margin-bottom: 40px;
+}
+
+.dashboard-card {
+    display: inline-block;
+    background: #ffffff;
+    padding: 20px 30px;
+    border-radius: 20px;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.05);
+    text-decoration: none;
+    color: #222;
+    font-weight: 600;
+    transition: 0.3s ease;
+}
+
+.dashboard-card:hover {
+    transform: translateY(-3px);
+}
+
+/* TABLE */
+
+.table-wrapper {
+    overflow-x: auto;
+}
+
+.orders-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #ffffff;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.05);
+}
+
+.orders-table th,
+.orders-table td {
+    padding: 15px;
+    text-align: left;
+}
+
+.orders-table thead {
+    background: #fdf1f5;
+}
+
+.orders-table th {
+    font-weight: 600;
+}
+
+.orders-table tbody tr {
+    border-top: 1px solid #eee;
+}
+
+.orders-table a {
+    text-decoration: none;
+    color: #e89ab0;
+    font-weight: 600;
+}
+
+/* STATUS BADGES */
+
+.status-badge {
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.status-badge.paid {
+    background: #e6f7ed;
+    color: #1a7f37;
+}
+
+.status-badge.pending {
+    background: #fdecea;
+    color: #d93025;
+}
+
+.no-orders {
+    margin-top: 20px;
+}
+
