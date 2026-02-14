@@ -17,9 +17,7 @@ class RazorpayService:
         Initialize Razorpay client using config keys.
         """
 
-        print("DEBUG KEY ID:", current_app.config.get("RAZORPAY_KEY_ID"))
-        print("DEBUG KEY SECRET:", current_app.config.get("RAZORPAY_KEY_SECRET"))
-
+        
         return razorpay.Client(
             auth=(
                 current_app.config.get("RAZORPAY_KEY_ID"),
