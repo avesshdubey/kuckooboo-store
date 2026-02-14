@@ -1,3 +1,6 @@
+# =========================
+# ORDER PLACED
+# =========================
 def order_confirmation_email(name, order_id, total):
     subject = "Order Placed - Kuckoo Boo & mama!"
 
@@ -19,7 +22,6 @@ def order_confirmation_email(name, order_id, total):
     """
 
     return subject, body
-
 
 
 # =========================
@@ -89,27 +91,35 @@ Team Kuckoo Boo & mama!
 
 
 # =========================
-# UPI PAYMENT CONFIRMED
+# RAZORPAY / UPI PAYMENT CONFIRMED
 # =========================
-def upi_payment_confirmed_email(name, order_id):
-    subject = "UPI Payment Confirmed - Kuckoo Boo & mama!"
+def upi_payment_confirmed_email(name, order_id, total):
+    subject = "Payment Confirmed - Kuckoo Boo & mama!"
 
     body = f"""
-Hi {name},
+    <html>
+    <body style="background:#f8f8f8;padding:20px;font-family:Arial;">
+        <div style="max-width:600px;margin:auto;background:white;padding:20px;border-radius:10px;">
+            <h2 style="color:#28a745;">Payment Received 💚</h2>
+            <p>Hi {name},</p>
+            <p>We have successfully received your payment.</p>
+            <p><strong>Order ID:</strong> {order_id}</p>
+            <p><strong>Total Paid:</strong> ₹{total}</p>
+            <hr>
+            <p style="font-size:14px;color:#777;">
+                Your order is now being processed.
+            </p>
+        </div>
+    </body>
+    </html>
+    """
 
-We have successfully received your UPI payment.
-
-Order ID: {order_id}
-
-Your order is now being processed.
-
-Thank you for your purchase!
-
-Team Kuckoo Boo & mama!
-"""
     return subject, body
 
 
+# =========================
+# REVIEW REMINDER
+# =========================
 def review_reminder_email(name, order_id, review_link):
     subject = "We'd Love Your Feedback - Kuckoo Boo & mama!"
 

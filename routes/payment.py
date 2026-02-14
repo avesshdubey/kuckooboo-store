@@ -33,7 +33,6 @@ if not payment_logger.handlers:
 
     payment_logger.addHandler(file_handler)
 
-# Force file creation at startup
 payment_logger.info("Payment logger initialized.")
 
 
@@ -146,28 +145,59 @@ def razorpay_webhook():
         conn.close()
         abort(400)
 
-    # Update payment status
+    # ✅ Update payment status AND order status
     conn.execute(
-        "UPDATE orders SET payment_status = 'PAID' WHERE id = ?",
+        """
+        UPDATE orders 
+        SET payment_status = 'PAID',
+            order_status = 'CONFIRMED'
+        WHERE id = ?
+        """,
         (order["id"],)
     )
     conn.commit()
     conn.close()
 
     payment_logger.info(
-        f"Payment marked PAID for order {order['id']}"
+        f"Payment marked PAID and order CONFIRMED for order {order['id']}"
     )
 
-    # Send confirmation email
-    html_content = upi_payment_confirmed_email(
-        order_id=order["id"],
-        total=order["total_amount"]
-    )
+    # ✅ Send confirmation email safely
+    if "email" in order.keys() and order["email"]:
 
-    send_email_async(
-        subject=f"Payment Confirmed - Order #{order['id']}",
-        recipients=[order["email"]] if "email" in order.keys() else [],
-        html_body=html_content
-    )
+        subject, html_content = upi_payment_confirmed_email(
+            order["full_name"],
+            order["id"],
+            order["total_amount"]
+        )
+
+        send_email_async(
+            order["email"],
+            subject,
+            html_content,
+            is_html=True
+        )
 
     return {"status": "success"}
+
+
+# =====================================================
+# 3️⃣ Payment Failure Page
+# =====================================================
+@payment_bp.route("/failure/<int:order_id>")
+def payment_failure(order_id):
+
+    conn = get_db_connection()
+    order = conn.execute(
+        "SELECT * FROM orders WHERE id = ?",
+        (order_id,)
+    ).fetchone()
+    conn.close()
+
+    if not order:
+        abort(404)
+
+    return render_template(
+        "checkout/payment_failed.html",
+        order=order
+    )

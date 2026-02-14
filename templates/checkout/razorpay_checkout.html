@@ -11,17 +11,30 @@
 
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
 <script>
 var options = {
     "key": "{{ razorpay_key }}",
     "amount": "{{ order.total_amount * 100 }}",
     "currency": "INR",
-    "name": "Your Store",
+    "name": "Kuckoo Boo",
     "description": "Order #{{ order.id }}",
     "order_id": "{{ razorpay_order_id }}",
+
+    // Success Handler
     "handler": function (response){
-        window.location.href = "{{ url_for('shop.home') }}";
+        // Payment success handled by webhook
+        window.location.href = "{{ url_for('checkout.success') }}";
     },
+
+    // If user closes or payment fails
+    "modal": {
+        "ondismiss": function () {
+            window.location.href = "{{ url_for('payment.payment_failure', order_id=order.id) }}";
+        }
+    },
+
     "theme": {
         "color": "#3399cc"
     }
@@ -34,5 +47,6 @@ document.getElementById('rzp-button').onclick = function(e){
     e.preventDefault();
 }
 </script>
+
 
 {% endblock %}
