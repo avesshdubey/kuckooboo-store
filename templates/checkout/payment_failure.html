@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}Payment Failed | Kuckoo Boo{% endblock %}
+
+{% block content %}
+<section class="checkout-section">
+
+    <h1>Payment Failed</h1>
+
+    <div class="failure-box">
+        <p>
+            Your payment for Order #{{ order.id }} was not completed.
+        </p>
+
+        <p>
+            You can retry the payment below.
+        </p>
+
+        <a href="{{ url_for('payment.razorpay_checkout', order_id=order.id) }}" class="btn-checkout">
+            Retry Payment
+        </a>
+
+        <a href="{{ url_for('shop.home') }}" class="btn-secondary">
+            Continue Shopping
+        </a>
+    </div>
+
+</section>
+{% endblock %}
