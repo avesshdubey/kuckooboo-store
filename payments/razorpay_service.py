@@ -16,12 +16,17 @@ class RazorpayService:
         """
         Initialize Razorpay client using config keys.
         """
+
+        print("DEBUG KEY ID:", current_app.config.get("RAZORPAY_KEY_ID"))
+        print("DEBUG KEY SECRET:", current_app.config.get("RAZORPAY_KEY_SECRET"))
+
         return razorpay.Client(
             auth=(
-                current_app.config["RAZORPAY_KEY_ID"],
-                current_app.config["RAZORPAY_KEY_SECRET"]
+                current_app.config.get("RAZORPAY_KEY_ID"),
+                current_app.config.get("RAZORPAY_KEY_SECRET")
             )
         )
+
 
     @staticmethod
     def create_order(order_id: int, amount: float):
