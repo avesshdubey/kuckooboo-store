@@ -8,14 +8,11 @@
 
 {% block content %}
 
-<!-- ===================================================== -->
 <!-- HERO SECTION -->
-<!-- ===================================================== -->
 <section class="home-hero">
     <div class="hero-content">
         <h1>Premium Essentials for Babies & Kids</h1>
         <p>Thoughtfully crafted products made with love and care.</p>
-
         <a href="#products" class="btn-primary">
             Shop Now
         </a>
@@ -23,9 +20,7 @@
 </section>
 
 
-<!-- ===================================================== -->
 <!-- PRODUCTS SECTION -->
-<!-- ===================================================== -->
 <section id="products" class="home-products">
 
     <div class="section-header">
@@ -38,8 +33,6 @@
         </p>
     {% endif %}
 
-
-    <!-- CATEGORY PILL FILTER -->
     {% if categories %}
     <div class="category-filter">
 
@@ -62,21 +55,14 @@
     </div>
     {% endif %}
 
-
-    <!-- SEARCH + SORTING FORM -->
     <div class="sorting-bar">
         <form method="get" class="sorting-form">
 
-            <!-- Search Input -->
             <input type="text"
                    name="search"
                    placeholder="Search..."
                    value="{{ search_query }}">
 
-            <!-- Category Dropdown -->
-            <label for="category-select" class="sr-only">
-                Filter by Category
-            </label>
             <select id="category-select" name="category">
                 <option value="">All Categories</option>
                 {% for cat in categories %}
@@ -87,18 +73,12 @@
                 {% endfor %}
             </select>
 
-            <!-- Sorting Dropdown -->
-            <label for="sort-select" class="sr-only">
-                Sort Products
-            </label>
             <select id="sort-select" name="sort">
                 <option value="">Newest</option>
-
                 <option value="price_low"
                     {% if sort == "price_low" %}selected{% endif %}>
                     Price: Low to High
                 </option>
-
                 <option value="price_high"
                     {% if sort == "price_high" %}selected{% endif %}>
                     Price: High to Low
@@ -113,7 +93,6 @@
     </div>
 
 
-    <!-- PRODUCT GRID -->
     {% if products %}
     <div class="product-grid">
 
@@ -175,21 +154,11 @@
                     </button>
                 {% endif %}
 
-                {% if session.get("is_admin") %}
+                {% if session.get("user_id") and session.get("is_admin") %}
                 <div class="admin-actions">
-                    <a href="{{ url_for('admin.edit_product', product_id=product.id) }}">
-                        Edit
+                    <a href="{{ url_for('admin.add_product') }}">
+                        Add Product
                     </a>
-
-                    <form
-                        method="POST"
-                        action="{{ url_for('admin.delete_product', product_id=product.id) }}"
-                        onsubmit="return confirm('Delete this product permanently?');"
-                    >
-                        <button type="submit" class="btn-delete">
-                            Delete
-                        </button>
-                    </form>
                 </div>
                 {% endif %}
 
@@ -199,7 +168,6 @@
         {% endfor %}
 
     </div>
-
 
     {% if total_pages > 1 %}
     <div class="pagination">
@@ -238,14 +206,12 @@
     {% endif %}
 
     {% else %}
-
     <div class="empty-state">
         <p>No products found.</p>
         <a href="{{ url_for('shop.home') }}" class="btn-primary">
             View All Products
         </a>
     </div>
-
     {% endif %}
 
 </section>
