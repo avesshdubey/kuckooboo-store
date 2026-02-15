@@ -1,6 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session
 from psycopg2.extras import RealDictCursor
-
 from database.db import get_db_connection
 from config import Config
 import os
@@ -17,13 +16,11 @@ def allowed_file(filename, allowed_set):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in allowed_set
 
 
-# Helper to get cursor safely (Postgres / SQLite compatible)
+# ✅ Proper Cursor Handling (Postgres + SQLite Safe)
 def get_cursor(conn):
-    if hasattr(conn, "cursor") and Config.DB_TYPE == "postgres":
+    if Config.DB_TYPE == "postgres":
         return conn.cursor(cursor_factory=RealDictCursor)
-    else:
-        return conn.cursor()
-
+    return conn.cursor()
 
 
 # =========================
@@ -130,7 +127,12 @@ def product_detail(product_id):
     reviews = cur.fetchall()
 
     cur.execute(
-        f"SELECT AVG(rating) as avg_rating, COUNT(*) as total FROM reviews WHERE product_id = {placeholder}",
+        f"""
+        SELECT AVG(rating) as avg_rating,
+               COUNT(*) as total
+        FROM reviews
+        WHERE product_id = {placeholder}
+        """,
         (product_id,)
     )
     avg_rating_data = cur.fetchone()
@@ -150,14 +152,21 @@ def product_detail(product_id):
             (product_id, session["user_id"])
         )
         delivered = cur.fetchone()
-
         if delivered:
             can_review = True
 
     conn.close()
 
-    avg_rating = round(avg_rating_data["avg_rating"], 1) if avg_rating_data and avg_rating_data["avg_rating"] else 0
-    total_reviews = avg_rating_data["total"] if avg_rating_data else 0
+    avg_rating = 0
+    total_reviews = 0
+
+    if avg_rating_data:
+        if isinstance(avg_rating_data, dict):
+            avg_rating = round(avg_rating_data["avg_rating"], 1) if avg_rating_data["avg_rating"] else 0
+            total_reviews = avg_rating_data["total"]
+        else:
+            avg_rating = round(avg_rating_data[0], 1) if avg_rating_data[0] else 0
+            total_reviews = avg_rating_data[1]
 
     return render_template(
         "shop/product_detail.html",
@@ -221,6 +230,7 @@ def add_review(product_id):
             conn.close()
             return "Invalid file type", 400
 
+        os.makedirs(UPLOAD_FOLDER, exist_ok=True)
         unique_name = f"{uuid.uuid4().hex}.{ext}"
         file.save(os.path.join(UPLOAD_FOLDER, unique_name))
         media_filename = unique_name
@@ -228,7 +238,8 @@ def add_review(product_id):
     cur.execute(
         f"""
         SELECT id FROM reviews
-        WHERE product_id = {placeholder} AND user_id = {placeholder}
+        WHERE product_id = {placeholder}
+        AND user_id = {placeholder}
         """,
         (product_id, user_id)
     )
@@ -239,17 +250,22 @@ def add_review(product_id):
         cur.execute(
             f"""
             UPDATE reviews
-            SET rating = {placeholder}, review_text = {placeholder},
-                media_file = {placeholder}, media_type = {placeholder}
-            WHERE product_id = {placeholder} AND user_id = {placeholder}
+            SET rating = {placeholder},
+                review_text = {placeholder},
+                media_file = {placeholder},
+                media_type = {placeholder}
+            WHERE product_id = {placeholder}
+            AND user_id = {placeholder}
             """,
             (rating, review_text, media_filename, media_type, product_id, user_id)
         )
     else:
         cur.execute(
             f"""
-            INSERT INTO reviews (product_id, user_id, rating, review_text, media_file, media_type)
-            VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})
+            INSERT INTO reviews
+            (product_id, user_id, rating, review_text, media_file, media_type)
+            VALUES ({placeholder}, {placeholder}, {placeholder},
+                    {placeholder}, {placeholder}, {placeholder})
             """,
             (product_id, user_id, rating, review_text, media_filename, media_type)
         )
@@ -277,7 +293,8 @@ def search():
 
         cur.execute(
             f"""
-            SELECT id, name, price, description, stock, image, is_new, category
+            SELECT id, name, price, description,
+                   stock, image, is_new, category
             FROM products
             WHERE name LIKE {placeholder}
             ORDER BY id DESC
@@ -305,3 +322,4 @@ def about():
 @shop_bp.route("/contact")
 def contact():
     return render_template("contact.html")
+
