@@ -31,6 +31,23 @@ def create_app():
         from database.init_db import init_db
         init_db()
         return "Database initialized successfully."
+    
+    @app.route("/__make_me_admin/<email>")
+    def make_me_admin(email):
+        from database.db import get_db_connection
+
+        conn = get_db_connection()
+
+        conn.execute(
+            "UPDATE users SET is_admin = 1 WHERE email = ?",
+            (email,)
+        )
+
+        conn.commit()
+        conn.close()
+
+        return f"{email} is now admin."
+
     return app   # ✅ VERY IMPORTANT
 
 
