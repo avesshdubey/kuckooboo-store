@@ -5,47 +5,56 @@ from config import Config
 def init_db():
     conn = get_db_connection()
 
+    if Config.DB_TYPE == "postgres":
+        pk = "SERIAL PRIMARY KEY"
+        int_type = "INTEGER"
+        real_type = "DOUBLE PRECISION"
+    else:
+        pk = "INTEGER PRIMARY KEY AUTOINCREMENT"
+        int_type = "INTEGER"
+        real_type = "REAL"
+
     # ===============================
     # USERS
     # ===============================
-    conn.execute("""
+    conn.execute(f"""
     CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id {pk},
         name TEXT NOT NULL,
         email TEXT UNIQUE NOT NULL,
         password_hash TEXT NOT NULL,
-        is_admin INTEGER DEFAULT 0,
+        is_admin {int_type} DEFAULT 0,
         reset_token TEXT,
-        reset_token_expiry INTEGER,
-        created_at INTEGER
+        reset_token_expiry {int_type},
+        created_at {int_type}
     )
     """)
 
     # ===============================
     # PRODUCTS
     # ===============================
-    conn.execute("""
+    conn.execute(f"""
     CREATE TABLE IF NOT EXISTS products (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id {pk},
         name TEXT NOT NULL,
         description TEXT,
-        price REAL NOT NULL,
-        stock INTEGER NOT NULL,
+        price {real_type} NOT NULL,
+        stock {int_type} NOT NULL,
         image TEXT,
-        is_new INTEGER DEFAULT 0,
+        is_new {int_type} DEFAULT 0,
         category TEXT,
-        created_at INTEGER
+        created_at {int_type}
     )
     """)
 
     # ===============================
     # ORDERS
     # ===============================
-    conn.execute("""
+    conn.execute(f"""
     CREATE TABLE IF NOT EXISTS orders (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER,
-        total_amount REAL NOT NULL,
+        id {pk},
+        user_id {int_type},
+        total_amount {real_type} NOT NULL,
         payment_method TEXT,
         payment_status TEXT,
         order_status TEXT,
@@ -56,8 +65,8 @@ def init_db():
         city TEXT,
         state TEXT,
         pincode TEXT,
-        review_reminder_sent INTEGER DEFAULT 0,
-        created_at INTEGER,
+        review_reminder_sent {int_type} DEFAULT 0,
+        created_at {int_type},
         FOREIGN KEY (user_id) REFERENCES users(id)
     )
     """)
@@ -65,14 +74,14 @@ def init_db():
     # ===============================
     # ORDER ITEMS
     # ===============================
-    conn.execute("""
+    conn.execute(f"""
     CREATE TABLE IF NOT EXISTS order_items (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        order_id INTEGER,
-        product_id INTEGER,
+        id {pk},
+        order_id {int_type},
+        product_id {int_type},
         product_name TEXT,
-        quantity INTEGER NOT NULL,
-        price REAL NOT NULL,
+        quantity {int_type} NOT NULL,
+        price {real_type} NOT NULL,
         FOREIGN KEY (order_id) REFERENCES orders(id),
         FOREIGN KEY (product_id) REFERENCES products(id)
     )
@@ -81,16 +90,16 @@ def init_db():
     # ===============================
     # REVIEWS
     # ===============================
-    conn.execute("""
+    conn.execute(f"""
     CREATE TABLE IF NOT EXISTS reviews (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        product_id INTEGER,
-        user_id INTEGER,
-        rating INTEGER NOT NULL,
+        id {pk},
+        product_id {int_type},
+        user_id {int_type},
+        rating {int_type} NOT NULL,
         review_text TEXT,
         media_file TEXT,
         media_type TEXT,
-        created_at INTEGER,
+        created_at {int_type},
         FOREIGN KEY (product_id) REFERENCES products(id),
         FOREIGN KEY (user_id) REFERENCES users(id)
     )

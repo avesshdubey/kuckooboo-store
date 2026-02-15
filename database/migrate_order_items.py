@@ -1,15 +1,25 @@
 from database.db import get_db_connection
+from config import Config
 
 conn = get_db_connection()
 
-conn.execute("""
+if Config.DB_TYPE == "postgres":
+    pk = "SERIAL PRIMARY KEY"
+    int_type = "INTEGER"
+    real_type = "DOUBLE PRECISION"
+else:
+    pk = "INTEGER PRIMARY KEY AUTOINCREMENT"
+    int_type = "INTEGER"
+    real_type = "REAL"
+
+conn.execute(f"""
 CREATE TABLE IF NOT EXISTS order_items (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    order_id INTEGER NOT NULL,
-    product_id INTEGER NOT NULL,
+    id {pk},
+    order_id {int_type} NOT NULL,
+    product_id {int_type} NOT NULL,
     product_name TEXT NOT NULL,
-    quantity INTEGER NOT NULL,
-    price REAL NOT NULL
+    quantity {int_type} NOT NULL,
+    price {real_type} NOT NULL
 )
 """)
 

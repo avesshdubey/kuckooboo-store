@@ -1,14 +1,23 @@
 from database.db import get_db_connection
-import time
+from config import Config
+
 
 conn = get_db_connection()
-cursor = conn.cursor()
 
-cursor.execute("""
+if Config.DB_TYPE == "postgres":
+    pk = "SERIAL PRIMARY KEY"
+    int_type = "INTEGER"
+    real_type = "DOUBLE PRECISION"
+else:
+    pk = "INTEGER PRIMARY KEY AUTOINCREMENT"
+    int_type = "INTEGER"
+    real_type = "REAL"
+
+conn.execute(f"""
 CREATE TABLE IF NOT EXISTS orders (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id INTEGER,
-    total_amount REAL NOT NULL,
+    id {pk},
+    user_id {int_type},
+    total_amount {real_type} NOT NULL,
     payment_method TEXT,
     payment_status TEXT,
     order_status TEXT,
@@ -19,8 +28,8 @@ CREATE TABLE IF NOT EXISTS orders (
     city TEXT,
     state TEXT,
     pincode TEXT,
-    review_reminder_sent INTEGER DEFAULT 0,
-    created_at INTEGER
+    review_reminder_sent {int_type} DEFAULT 0,
+    created_at {int_type}
 )
 """)
 
@@ -28,4 +37,3 @@ conn.commit()
 conn.close()
 
 print("✅ Orders table ready")
-
