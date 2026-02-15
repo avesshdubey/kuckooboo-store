@@ -1,4 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session
+from psycopg2.extras import RealDictCursor
+
 from database.db import get_db_connection
 from config import Config
 import os
@@ -17,9 +19,11 @@ def allowed_file(filename, allowed_set):
 
 # Helper to get cursor safely (Postgres / SQLite compatible)
 def get_cursor(conn):
-    if Config.DB_TYPE == "postgres":
-        return conn.cursor(cursor_factory=__import__("psycopg2.extras").extras.RealDictCursor)
-    return conn.cursor()
+    if hasattr(conn, "cursor") and Config.DB_TYPE == "postgres":
+        return conn.cursor(cursor_factory=RealDictCursor)
+    else:
+        return conn.cursor()
+
 
 
 # =========================
