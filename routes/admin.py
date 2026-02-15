@@ -177,11 +177,15 @@ def dashboard():
         """
     ).fetchone()["total"]
 
+    # 🔥 Fix: Ensure daily_sales always exists
+    daily_sales = []
+
     conn.close()
 
     return render_template(
         "admin/dashboard.html",
         total_orders=total_orders,
         total_products=total_products,
-        total_revenue=total_revenue
+        total_revenue=total_revenue,
+        daily_sales=daily_sales
     )
