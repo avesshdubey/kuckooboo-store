@@ -2,12 +2,26 @@ import os
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
+
 class Config:
     # ==========================
     # Core App Configuration
     # ==========================
     SECRET_KEY = os.environ.get("SECRET_KEY", "fallback-secret")
-    DATABASE_PATH = os.path.join(BASE_DIR, "database", "store.db")
+
+    # ==========================
+    # Database Configuration
+    # ==========================
+    DATABASE_URL = os.environ.get("DATABASE_URL")
+
+    if DATABASE_URL:
+        # Railway / Production (PostgreSQL)
+        DATABASE_URI = DATABASE_URL
+        DB_TYPE = "postgres"
+    else:
+        # Local Development (SQLite)
+        DATABASE_URI = os.path.join(BASE_DIR, "database", "store.db")
+        DB_TYPE = "sqlite"
 
     # ==========================
     # Mail Configuration

@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session
 from database.db import get_db_connection
+from config import Config
 import os
 import uuid
 
@@ -12,6 +13,13 @@ ALLOWED_VIDEO_EXTENSIONS = {"mp4", "mov", "avi", "webm"}
 
 def allowed_file(filename, allowed_set):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in allowed_set
+
+
+# Helper to get cursor safely (Postgres / SQLite compatible)
+def get_cursor(conn):
+    if Config.DB_TYPE == "postgres":
+        return conn.cursor(cursor_factory=__import__("psycopg2.extras").extras.RealDictCursor)
+    return conn.cursor()
 
 
 # =========================
@@ -28,19 +36,22 @@ def home():
     offset = (page - 1) * per_page
 
     conn = get_db_connection()
+    cur = get_cursor(conn)
 
     query = "SELECT * FROM products WHERE 1=1"
-    count_query = "SELECT COUNT(*) FROM products WHERE 1=1"
+    count_query = "SELECT COUNT(*) as count FROM products WHERE 1=1"
     params = []
 
+    placeholder = "%s" if Config.DB_TYPE == "postgres" else "?"
+
     if search_query:
-        query += " AND name LIKE ?"
-        count_query += " AND name LIKE ?"
+        query += f" AND name LIKE {placeholder}"
+        count_query += f" AND name LIKE {placeholder}"
         params.append(f"%{search_query}%")
 
     if category:
-        query += " AND category = ?"
-        count_query += " AND category = ?"
+        query += f" AND category = {placeholder}"
+        count_query += f" AND category = {placeholder}"
         params.append(category)
 
     if sort == "price_low":
@@ -50,18 +61,20 @@ def home():
     else:
         order_by = " ORDER BY id DESC"
 
-    total_products = conn.execute(count_query, tuple(params)).fetchone()[0]
+    cur.execute(count_query, params)
+    count_result = cur.fetchone()
 
-    query += order_by + " LIMIT ? OFFSET ?"
+    if isinstance(count_result, dict):
+        total_products = count_result["count"]
+    else:
+        total_products = count_result[0]
 
-    products = conn.execute(
-        query,
-        tuple(params) + (per_page, offset)
-    ).fetchall()
+    query += order_by + f" LIMIT {placeholder} OFFSET {placeholder}"
+    cur.execute(query, params + [per_page, offset])
+    products = cur.fetchall()
 
-    categories = conn.execute(
-        "SELECT DISTINCT category FROM products ORDER BY category ASC"
-    ).fetchall()
+    cur.execute("SELECT DISTINCT category FROM products ORDER BY category ASC")
+    categories = cur.fetchall()
 
     conn.close()
 
@@ -80,62 +93,67 @@ def home():
 
 
 # =========================
-# PRODUCT DETAIL (ENHANCED)
+# PRODUCT DETAIL
 # =========================
 @shop_bp.route("/product/<int:product_id>")
 def product_detail(product_id):
-    conn = get_db_connection()
 
-    product = conn.execute(
-        "SELECT * FROM products WHERE id = ?",
+    conn = get_db_connection()
+    cur = get_cursor(conn)
+
+    placeholder = "%s" if Config.DB_TYPE == "postgres" else "?"
+
+    cur.execute(
+        f"SELECT * FROM products WHERE id = {placeholder}",
         (product_id,)
-    ).fetchone()
+    )
+    product = cur.fetchone()
 
     if not product:
         conn.close()
         return "Product not found", 404
 
-    # Fetch reviews
-    reviews = conn.execute(
-        """
+    cur.execute(
+        f"""
         SELECT r.*, u.name as user_name
         FROM reviews r
         JOIN users u ON r.user_id = u.id
-        WHERE r.product_id = ?
+        WHERE r.product_id = {placeholder}
         ORDER BY r.id DESC
         """,
         (product_id,)
-    ).fetchall()
+    )
+    reviews = cur.fetchall()
 
-    # Average rating
-    avg_rating_data = conn.execute(
-        "SELECT AVG(rating) as avg_rating, COUNT(*) as total FROM reviews WHERE product_id = ?",
+    cur.execute(
+        f"SELECT AVG(rating) as avg_rating, COUNT(*) as total FROM reviews WHERE product_id = {placeholder}",
         (product_id,)
-    ).fetchone()
+    )
+    avg_rating_data = cur.fetchone()
 
     can_review = False
 
     if session.get("user_id"):
-        delivered = conn.execute(
-            """
+        cur.execute(
+            f"""
             SELECT oi.id
             FROM order_items oi
             JOIN orders o ON oi.order_id = o.id
-            WHERE oi.product_id = ?
-            AND o.user_id = ?
+            WHERE oi.product_id = {placeholder}
+            AND o.user_id = {placeholder}
             AND o.order_status = 'DELIVERED'
             """,
             (product_id, session["user_id"])
-        ).fetchone()
+        )
+        delivered = cur.fetchone()
 
         if delivered:
             can_review = True
 
-
     conn.close()
 
-    avg_rating = round(avg_rating_data["avg_rating"], 1) if avg_rating_data["avg_rating"] else 0
-    total_reviews = avg_rating_data["total"]
+    avg_rating = round(avg_rating_data["avg_rating"], 1) if avg_rating_data and avg_rating_data["avg_rating"] else 0
+    total_reviews = avg_rating_data["total"] if avg_rating_data else 0
 
     return render_template(
         "shop/product_detail.html",
@@ -148,7 +166,7 @@ def product_detail(product_id):
 
 
 # =========================
-# ADD REVIEW (NEW SAFE ROUTE)
+# ADD REVIEW
 # =========================
 @shop_bp.route("/product/<int:product_id>/add-review", methods=["POST"])
 def add_review(product_id):
@@ -159,19 +177,23 @@ def add_review(product_id):
     user_id = session["user_id"]
 
     conn = get_db_connection()
+    cur = get_cursor(conn)
 
-    # ✅ CHECK: user must have delivered order for this product
-    delivered_order = conn.execute(
-        """
+    placeholder = "%s" if Config.DB_TYPE == "postgres" else "?"
+
+    cur.execute(
+        f"""
         SELECT oi.id
         FROM order_items oi
         JOIN orders o ON oi.order_id = o.id
-        WHERE oi.product_id = ?
-        AND o.user_id = ?
+        WHERE oi.product_id = {placeholder}
+        AND o.user_id = {placeholder}
         AND o.order_status = 'DELIVERED'
         """,
         (product_id, user_id)
-    ).fetchone()
+    )
+
+    delivered_order = cur.fetchone()
 
     if not delivered_order:
         conn.close()
@@ -199,45 +221,33 @@ def add_review(product_id):
         file.save(os.path.join(UPLOAD_FOLDER, unique_name))
         media_filename = unique_name
 
-    # ✅ Check existing review (Step 1 logic preserved)
-    existing_review = conn.execute(
-        """
+    cur.execute(
+        f"""
         SELECT id FROM reviews
-        WHERE product_id = ? AND user_id = ?
+        WHERE product_id = {placeholder} AND user_id = {placeholder}
         """,
         (product_id, user_id)
-    ).fetchone()
+    )
+
+    existing_review = cur.fetchone()
 
     if existing_review:
-        conn.execute(
-            """
+        cur.execute(
+            f"""
             UPDATE reviews
-            SET rating = ?, review_text = ?, media_file = ?, media_type = ?
-            WHERE product_id = ? AND user_id = ?
+            SET rating = {placeholder}, review_text = {placeholder},
+                media_file = {placeholder}, media_type = {placeholder}
+            WHERE product_id = {placeholder} AND user_id = {placeholder}
             """,
-            (
-                rating,
-                review_text,
-                media_filename,
-                media_type,
-                product_id,
-                user_id
-            )
+            (rating, review_text, media_filename, media_type, product_id, user_id)
         )
     else:
-        conn.execute(
-            """
+        cur.execute(
+            f"""
             INSERT INTO reviews (product_id, user_id, rating, review_text, media_file, media_type)
-            VALUES (?, ?, ?, ?, ?, ?)
+            VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})
             """,
-            (
-                product_id,
-                user_id,
-                rating,
-                review_text,
-                media_filename,
-                media_type
-            )
+            (product_id, user_id, rating, review_text, media_filename, media_type)
         )
 
     conn.commit()
@@ -247,32 +257,30 @@ def add_review(product_id):
 
 
 # =========================
-# SEARCH PRODUCTS (kept intact)
+# SEARCH
 # =========================
 @shop_bp.route("/search")
 def search():
+
     query_text = request.args.get("q", "").strip()
     products = []
 
     if query_text:
         conn = get_db_connection()
-        products = conn.execute(
-            """
-            SELECT
-                id,
-                name,
-                price,
-                description,
-                stock,
-                image,
-                is_new,
-                category
+        cur = get_cursor(conn)
+
+        placeholder = "%s" if Config.DB_TYPE == "postgres" else "?"
+
+        cur.execute(
+            f"""
+            SELECT id, name, price, description, stock, image, is_new, category
             FROM products
-            WHERE name LIKE ?
+            WHERE name LIKE {placeholder}
             ORDER BY id DESC
             """,
             (f"%{query_text}%",)
-        ).fetchall()
+        )
+        products = cur.fetchall()
         conn.close()
 
     return render_template(
