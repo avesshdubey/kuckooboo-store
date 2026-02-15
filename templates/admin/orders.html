@@ -13,7 +13,7 @@
 
         <div class="admin-header">
             <h1>All Orders</h1>
-            <p>Manage payments and order statuses</p>
+            <p>View customer orders</p>
         </div>
 
         {% if orders %}
@@ -27,8 +27,9 @@
                         <th>Customer</th>
                         <th>Email</th>
                         <th>Total</th>
-                        <th>Payment</th>
-                        <th>Status</th>
+                        <th>Payment Method</th>
+                        <th>Payment Status</th>
+                        <th>Order Status</th>
                         <th>Date</th>
                     </tr>
                 </thead>
@@ -39,98 +40,31 @@
 
                         <!-- Order ID -->
                         <td>
-                            <a href="{{ url_for('admin.order_detail', order_id=order.id) }}"
+                            <a href="{{ url_for('user.order_detail', order_id=order.id) }}"
                                class="edit-link">
                                 #{{ order.id }}
                             </a>
                         </td>
 
-                        <!-- Customer -->
                         <td>{{ order.customer_name }}</td>
-
-                        <!-- Email -->
                         <td>{{ order.customer_email }}</td>
-
-                        <!-- Total -->
                         <td>₹ {{ order.total_amount }}</td>
+                        <td>{{ order.payment_method }}</td>
 
-                        <!-- Payment -->
                         <td>
-                            <div class="payment-method">
-                                {{ order.payment_method }}
-                            </div>
-
-                            <div class="payment-status-block">
-
-                                {% if order.payment_status == "PAID" %}
-                                    <span class="status-badge paid">
-                                        PAID
-                                    </span>
-                                {% else %}
-                                    <span class="status-badge pending">
-                                        PENDING
-                                    </span>
-
-                                    {% if order.payment_method == "UPI" %}
-                                    <form
-                                        method="POST"
-                                        action="{{ url_for('admin.mark_order_paid', order_id=order.id) }}"
-                                        class="inline-form"
-                                    >
-                                        <button type="submit" class="btn-admin-small">
-                                            Mark as Paid
-                                        </button>
-                                    </form>
-                                    {% endif %}
-                                {% endif %}
-
-                            </div>
+                            {% if order.payment_status == "PAID" %}
+                                <span class="status-badge paid">PAID</span>
+                            {% else %}
+                                <span class="status-badge pending">PENDING</span>
+                            {% endif %}
                         </td>
 
-                        <!-- Order Status -->
                         <td>
-
-                            <div class="current-status">
-                                <span class="status-badge order-status">
-                                    {{ order.order_status }}
-                                </span>
-                            </div>
-
-                            <form
-                                method="POST"
-                                action="{{ url_for('admin.update_order_status', order_id=order.id) }}"
-                                class="status-update-form"
-                            >
-
-                                <label for="status-{{ order.id }}" class="sr-only">
-                                    Update Order Status
-                                </label>
-
-                                <select
-                                    id="status-{{ order.id }}"
-                                    name="order_status"
-                                    class="admin-select"
-                                    required
-                                >
-                                    {% for s in ["PLACED","CONFIRMED","SHIPPED","DELIVERED","CANCELLED"] %}
-                                        <option
-                                            value="{{ s }}"
-                                            {% if s == order.order_status %}selected{% endif %}
-                                        >
-                                            {{ s }}
-                                        </option>
-                                    {% endfor %}
-                                </select>
-
-                                <button type="submit" class="btn-admin-small">
-                                    Update
-                                </button>
-
-                            </form>
-
+                            <span class="status-badge order-status">
+                                {{ order.order_status }}
+                            </span>
                         </td>
 
-                        <!-- Date -->
                         <td>{{ order.created_at }}</td>
 
                     </tr>
