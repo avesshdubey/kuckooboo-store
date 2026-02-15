@@ -35,3 +35,10 @@ app = create_app()
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
+
+    @app.route("/__init_db_once")
+    def init_db_once():
+        from database.init_db import init_db
+        init_db()
+        return "Database initialized successfully."
