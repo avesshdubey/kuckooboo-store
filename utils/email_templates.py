@@ -31,18 +31,18 @@ def order_confirmed_email(name, order_id):
     subject = "Your Order is Confirmed - Kuckoo Boo & mama!"
 
     body = f"""
-Hi {name},
+    <html>
+    <body style="font-family:Arial;">
+        <p>Hi {name},</p>
+        <p>Good news!</p>
+        <p>Your order (ID: {order_id}) has been confirmed and is being prepared.</p>
+        <p>We will notify you once it ships.</p>
+        <p>Thank you for shopping with us!</p>
+        <p><strong>Team Kuckoo Boo & mama!</strong></p>
+    </body>
+    </html>
+    """
 
-Good news!
-
-Your order (ID: {order_id}) has been confirmed and is being prepared.
-
-We will notify you once it ships.
-
-Thank you for shopping with us!
-
-Team Kuckoo Boo & mama!
-"""
     return subject, body
 
 
@@ -53,18 +53,18 @@ def order_shipped_email(name, order_id):
     subject = "Your Order Has Been Shipped!"
 
     body = f"""
-Hi {name},
+    <html>
+    <body style="font-family:Arial;">
+        <p>Hi {name},</p>
+        <p>Great news!</p>
+        <p>Your order (ID: {order_id}) has been shipped.</p>
+        <p>It will reach you soon.</p>
+        <p>Thank you for shopping with us!</p>
+        <p><strong>Team Kuckoo Boo & mama!</strong></p>
+    </body>
+    </html>
+    """
 
-Great news!
-
-Your order (ID: {order_id}) has been shipped.
-
-It will reach you soon.
-
-Thank you for shopping with us!
-
-Team Kuckoo Boo & mama!
-"""
     return subject, body
 
 
@@ -75,18 +75,18 @@ def order_delivered_email(name, order_id):
     subject = "Order Delivered - Thank You!"
 
     body = f"""
-Hi {name},
+    <html>
+    <body style="font-family:Arial;">
+        <p>Hi {name},</p>
+        <p>Your order (ID: {order_id}) has been delivered.</p>
+        <p>We hope you love your purchase!</p>
+        <p>If you enjoyed the product, we would really appreciate your review.</p>
+        <p>Thank you for choosing Kuckoo Boo & mama!</p>
+        <p><strong>Team Kuckoo Boo & mama!</strong></p>
+    </body>
+    </html>
+    """
 
-Your order (ID: {order_id}) has been delivered.
-
-We hope you love your purchase!
-
-If you enjoyed the product, we would really appreciate your review.
-
-Thank you for choosing Kuckoo Boo & mama!
-
-Team Kuckoo Boo & mama!
-"""
     return subject, body
 
 
@@ -124,19 +124,18 @@ def review_reminder_email(name, order_id, review_link):
     subject = "We'd Love Your Feedback - Kuckoo Boo & mama!"
 
     body = f"""
-Hi {name},
+    <html>
+    <body style="font-family:Arial;">
+        <p>Hi {name},</p>
+        <p>Your order (ID: {order_id}) was delivered a few days ago.</p>
+        <p>We hope you are enjoying it!</p>
+        <p>Please take a moment to leave your review:</p>
+        <p><a href="{review_link}">{review_link}</a></p>
+        <p>Your feedback helps other customers and supports our small business.</p>
+        <p>Thank you 💛</p>
+        <p><strong>Team Kuckoo Boo & mama!</strong></p>
+    </body>
+    </html>
+    """
 
-Your order (ID: {order_id}) was delivered a few days ago.
-
-We hope you are enjoying it!
-
-Please take a moment to leave your review:
-
-{review_link}
-
-Your feedback helps other customers and supports our small business.
-
-Thank you 💛
-Team Kuckoo Boo & mama!
-"""
     return subject, body

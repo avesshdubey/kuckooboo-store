@@ -1,27 +1,13 @@
-import json
 import logging
 import os
 from flask import Blueprint, render_template, request, current_app, abort
 from database.db import get_db_connection
-from config import Config
 from payments.razorpay_service import RazorpayService
 from utils.email_queue import send_email_async
 from utils.email_templates import upi_payment_confirmed_email
-import psycopg2.extras
 
 
 payment_bp = Blueprint("payment", __name__, url_prefix="/payment")
-
-
-# Helper for DB placeholder + cursor
-def get_cursor(conn):
-    if Config.DB_TYPE == "postgres":
-        return conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-    return conn.cursor()
-
-
-def ph():
-    return "%s" if Config.DB_TYPE == "postgres" else "?"
 
 
 # =====================================================
@@ -57,19 +43,18 @@ payment_logger.info("Payment logger initialized.")
 def razorpay_checkout(order_id):
 
     conn = get_db_connection()
-    cur = get_cursor(conn)
 
-    cur.execute(
-        f"SELECT * FROM orders WHERE id = {ph()}",
+    order = conn.execute(
+        "SELECT * FROM orders WHERE id = ?",
         (order_id,)
-    )
-    order = cur.fetchone()
-    conn.close()
+    ).fetchone()
 
     if not order:
+        conn.close()
         abort(404)
 
     if order["payment_status"] == "PAID":
+        conn.close()
         return "Payment already completed."
 
     razorpay_order = RazorpayService.create_order(
@@ -77,13 +62,11 @@ def razorpay_checkout(order_id):
         amount=order["total_amount"]
     )
 
-    conn = get_db_connection()
-    cur = get_cursor(conn)
-
-    cur.execute(
-        f"UPDATE orders SET razorpay_order_id = {ph()} WHERE id = {ph()}",
+    conn.execute(
+        "UPDATE orders SET razorpay_order_id = ? WHERE id = ?",
         (razorpay_order["id"], order_id)
     )
+
     conn.commit()
     conn.close()
 
@@ -134,13 +117,11 @@ def razorpay_webhook():
     amount_paid = payment_entity["amount"] / 100
 
     conn = get_db_connection()
-    cur = get_cursor(conn)
 
-    cur.execute(
-        f"SELECT * FROM orders WHERE razorpay_order_id = {ph()}",
+    order = conn.execute(
+        "SELECT * FROM orders WHERE razorpay_order_id = ?",
         (razorpay_order_id,)
-    )
-    order = cur.fetchone()
+    ).fetchone()
 
     if not order:
         conn.close()
@@ -155,12 +136,12 @@ def razorpay_webhook():
         abort(400)
 
     # Update status
-    cur.execute(
-        f"""
+    conn.execute(
+        """
         UPDATE orders
         SET payment_status = 'PAID',
             order_status = 'CONFIRMED'
-        WHERE id = {ph()}
+        WHERE id = ?
         """,
         (order["id"],)
     )
@@ -173,7 +154,9 @@ def razorpay_webhook():
     )
 
     # Send email
-    if order.get("email"):
+    email = order.get("email")
+
+    if email:
         subject, html_content = upi_payment_confirmed_email(
             order["full_name"],
             order["id"],
@@ -181,7 +164,7 @@ def razorpay_webhook():
         )
 
         send_email_async(
-            order["email"],
+            email,
             subject,
             html_content,
             is_html=True
@@ -197,13 +180,12 @@ def razorpay_webhook():
 def payment_failure(order_id):
 
     conn = get_db_connection()
-    cur = get_cursor(conn)
 
-    cur.execute(
-        f"SELECT * FROM orders WHERE id = {ph()}",
+    order = conn.execute(
+        "SELECT * FROM orders WHERE id = ?",
         (order_id,)
-    )
-    order = cur.fetchone()
+    ).fetchone()
+
     conn.close()
 
     if not order:

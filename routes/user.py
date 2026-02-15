@@ -17,13 +17,8 @@ def dashboard():
 
     orders = conn.execute(
         """
-        SELECT
-            id,
-            total_amount,
-            payment_method,
-            payment_status,
-            order_status,
-            created_at
+        SELECT id, total_amount, payment_method,
+               payment_status, order_status, created_at
         FROM orders
         WHERE user_id = ?
         ORDER BY id DESC
@@ -34,6 +29,7 @@ def dashboard():
     conn.close()
 
     formatted_orders = []
+
     for order in orders:
         formatted_orders.append({
             "id": order["id"],
@@ -46,10 +42,7 @@ def dashboard():
             ).strftime("%d %b %Y, %I:%M %p")
         })
 
-    return render_template(
-        "user/dashboard.html",
-        orders=formatted_orders
-    )
+    return render_template("user/dashboard.html", orders=formatted_orders)
 
 
 # =========================
@@ -64,13 +57,8 @@ def my_orders():
 
     orders = conn.execute(
         """
-        SELECT
-            id,
-            total_amount,
-            payment_method,
-            payment_status,
-            order_status,
-            created_at
+        SELECT id, total_amount, payment_method,
+               payment_status, order_status, created_at
         FROM orders
         WHERE user_id = ?
         ORDER BY id DESC
@@ -81,6 +69,7 @@ def my_orders():
     conn.close()
 
     formatted_orders = []
+
     for order in orders:
         formatted_orders.append({
             "id": order["id"],
@@ -93,14 +82,11 @@ def my_orders():
             ).strftime("%d %b %Y, %I:%M %p")
         })
 
-    return render_template(
-        "user/my_orders.html",
-        orders=formatted_orders
-    )
+    return render_template("user/my_orders.html", orders=formatted_orders)
 
 
 # =========================
-# ORDER DETAIL (USER)
+# ORDER DETAIL
 # =========================
 @user_bp.route("/order/<int:order_id>")
 def order_detail(order_id):
@@ -111,13 +97,8 @@ def order_detail(order_id):
 
     order = conn.execute(
         """
-        SELECT
-            id,
-            total_amount,
-            payment_method,
-            payment_status,
-            order_status,
-            created_at
+        SELECT id, total_amount, payment_method,
+               payment_status, order_status, created_at
         FROM orders
         WHERE id = ? AND user_id = ?
         """,
@@ -146,7 +127,10 @@ def order_detail(order_id):
     )
 
 
-@user_bp.route("/order/<int:order_id>")
+# =========================
+# TRACK ORDER
+# =========================
+@user_bp.route("/track/<int:order_id>")
 def track_order(order_id):
     if not session.get("user_id"):
         return redirect(url_for("auth.login"))
@@ -177,14 +161,11 @@ def track_order(order_id):
 
     conn.close()
 
-    return render_template(
-        "user/track_order.html",
-        order=order,
-        items=items
-    )
+    return render_template("user/track_order.html", order=order, items=items)
+
 
 # =========================
-# CANCEL ORDER (USER)
+# CANCEL ORDER
 # =========================
 @user_bp.route("/cancel-order/<int:order_id>", methods=["POST"])
 def cancel_order(order_id):
@@ -206,26 +187,35 @@ def cancel_order(order_id):
         conn.close()
         return "Order not found", 404
 
-    # ✅ Check BEFORE updating
     if order["order_status"] not in ["PLACED", "CONFIRMED"]:
         conn.close()
         return redirect(url_for("user.my_orders"))
 
-    # Restore stock
     items = conn.execute(
-        "SELECT product_id, quantity FROM order_items WHERE order_id = ?",
+        """
+        SELECT product_id, quantity
+        FROM order_items
+        WHERE order_id = ?
+        """,
         (order_id,)
     ).fetchall()
 
     for item in items:
         conn.execute(
-            "UPDATE products SET stock = stock + ? WHERE id = ?",
+            """
+            UPDATE products
+            SET stock = stock + ?
+            WHERE id = ?
+            """,
             (item["quantity"], item["product_id"])
         )
 
-    # Now cancel
     conn.execute(
-        "UPDATE orders SET order_status = 'CANCELLED' WHERE id = ?",
+        """
+        UPDATE orders
+        SET order_status = 'CANCELLED'
+        WHERE id = ?
+        """,
         (order_id,)
     )
 

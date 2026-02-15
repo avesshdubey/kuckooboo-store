@@ -21,7 +21,6 @@ def checkout():
     if not cart:
         return redirect(url_for("cart.view_cart"))
 
-    # Prevent duplicate submissions
     session["checkout_token"] = str(uuid.uuid4())
 
     total = sum(item["price"] * item["quantity"] for item in cart.values())
@@ -46,18 +45,12 @@ def place_order():
     payment_method = request.form.get("payment_method")
     token = request.form.get("checkout_token")
 
-    # =========================
-    # SECURITY VALIDATION
-    # =========================
     if not token or token != session.get("checkout_token"):
         return "Duplicate or invalid order request", 400
 
     if not cart or payment_method not in ["COD", "RAZORPAY"]:
         return redirect(url_for("checkout.checkout"))
 
-    # =========================
-    # SHIPPING DETAILS
-    # =========================
     full_name = request.form["full_name"]
     phone = request.form["phone"]
     address = request.form["address"]
@@ -66,13 +59,12 @@ def place_order():
     pincode = request.form["pincode"]
 
     conn = get_db_connection()
-    cursor = conn.cursor()
 
     # =========================
     # STOCK VALIDATION
     # =========================
     for product_id, item in cart.items():
-        product = cursor.execute(
+        product = conn.execute(
             "SELECT stock FROM products WHERE id = ?",
             (product_id,)
         ).fetchone()
@@ -83,44 +75,74 @@ def place_order():
 
     total = sum(item["price"] * item["quantity"] for item in cart.values())
 
-    # =========================
-    # CORRECT PAYMENT STATUS LOGIC
-    # =========================
-    # COD → Paid (manual confirmation outside system)
-    # Razorpay → Pending (will update via webhook)
     payment_status = "PAID" if payment_method == "COD" else "PENDING"
 
-    cursor.execute(
-        """
-        INSERT INTO orders (
-            user_id, total_amount, payment_method, payment_status,
-            order_status, full_name, phone, address, city, state, pincode, created_at
+       # =========================
+    # INSERT ORDER
+    # =========================
+    if "postgres" in conn.db_type:
+        result = conn.execute(
+            """
+            INSERT INTO orders (
+                user_id, total_amount, payment_method, payment_status,
+                order_status, full_name, phone, address,
+                city, state, pincode, created_at
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            RETURNING id
+            """,
+            (
+                session["user_id"],
+                total,
+                payment_method,
+                payment_status,
+                "PLACED",
+                full_name,
+                phone,
+                address,
+                city,
+                state,
+                pincode,
+                int(time.time()),
+            ),
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """,
-        (
-            session["user_id"],
-            total,
-            payment_method,
-            payment_status,
-            "PLACED",
-            full_name,
-            phone,
-            address,
-            city,
-            state,
-            pincode,
-            int(time.time()),
-        ),
-    )
 
-    order_id = cursor.lastrowid
+        order_id = result.fetchone()["id"]
+
+    else:
+        result = conn.execute(
+            """
+            INSERT INTO orders (
+                user_id, total_amount, payment_method, payment_status,
+                order_status, full_name, phone, address,
+                city, state, pincode, created_at
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                session["user_id"],
+                total,
+                payment_method,
+                payment_status,
+                "PLACED",
+                full_name,
+                phone,
+                address,
+                city,
+                state,
+                pincode,
+                int(time.time()),
+            ),
+        )
+
+        order_id = result.lastrowid
+
 
     # =========================
-    # INSERT ORDER ITEMS + UPDATE STOCK
+    # ORDER ITEMS + STOCK UPDATE
     # =========================
     for product_id, item in cart.items():
-        cursor.execute(
+        conn.execute(
             """
             INSERT INTO order_items
             (order_id, product_id, product_name, quantity, price)
@@ -135,7 +157,7 @@ def place_order():
             ),
         )
 
-        cursor.execute(
+        conn.execute(
             "UPDATE products SET stock = stock - ? WHERE id = ?",
             (item["quantity"], product_id),
         )
@@ -143,7 +165,7 @@ def place_order():
     conn.commit()
 
     # =========================
-    # SEND ORDER CONFIRMATION EMAIL
+    # SEND EMAIL
     # =========================
     user = conn.execute(
         "SELECT email FROM users WHERE id = ?",
@@ -166,23 +188,17 @@ def place_order():
 
     conn.close()
 
-    # =========================
-    # CLEAR CART + TOKEN
-    # =========================
     session.pop("cart", None)
     session.pop("checkout_token", None)
 
     # =========================
     # PAYMENT FLOW
     # =========================
-
-    # Razorpay → Redirect to payment page
     if payment_method == "RAZORPAY":
         return redirect(
             url_for("payment.razorpay_checkout", order_id=order_id)
         )
 
-    # COD → WhatsApp confirmation redirect
     whatsapp_number = "918853121180"
 
     message = f"""

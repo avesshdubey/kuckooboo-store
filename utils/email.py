@@ -8,6 +8,16 @@ from config import Config
 
 logger = logging.getLogger("email_logger")
 
+# Ensure logger has handler (prevents silent logging failure)
+if not logger.handlers:
+    logger.setLevel(logging.INFO)
+    handler = logging.StreamHandler()
+    formatter = logging.Formatter(
+        "%(asctime)s - %(levelname)s - %(message)s"
+    )
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+
 
 def send_email(to_email, subject, body, is_html=False):
     """
@@ -15,7 +25,12 @@ def send_email(to_email, subject, body, is_html=False):
     Will not crash app if SMTP fails.
     """
 
-    # Disable email in Railway free environment (optional safety)
+    # Skip if credentials missing (prevents NoneType login error)
+    if not Config.MAIL_USERNAME or not Config.MAIL_PASSWORD:
+        logger.warning("Email skipped: MAIL credentials not configured.")
+        return
+
+    # Optional Railway protection
     if os.environ.get("RAILWAY_ENVIRONMENT"):
         logger.info("Email sending skipped (Railway environment).")
         return
@@ -39,7 +54,7 @@ def send_email(to_email, subject, body, is_html=False):
 
     except Exception as e:
         logger.error(f"Email sending failed: {str(e)}")
-        # Do NOT raise error → prevents payment webhook crash
+        # Do NOT raise → prevents webhook/payment crash
         return
 
 

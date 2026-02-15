@@ -17,14 +17,15 @@ class RazorpayService:
         Initialize Razorpay client using config keys.
         """
 
-        
-        return razorpay.Client(
-            auth=(
-                current_app.config.get("RAZORPAY_KEY_ID"),
-                current_app.config.get("RAZORPAY_KEY_SECRET")
-            )
-        )
+        key_id = current_app.config.get("RAZORPAY_KEY_ID")
+        key_secret = current_app.config.get("RAZORPAY_KEY_SECRET")
 
+        if not key_id or not key_secret:
+            raise ValueError("Razorpay API keys are not configured properly.")
+
+        return razorpay.Client(
+            auth=(key_id, key_secret)
+        )
 
     @staticmethod
     def create_order(order_id: int, amount: float):
@@ -45,15 +46,24 @@ class RazorpayService:
         return razorpay_order
 
     @staticmethod
-    def verify_payment_signature(razorpay_order_id, razorpay_payment_id, razorpay_signature):
+    def verify_payment_signature(
+        razorpay_order_id,
+        razorpay_payment_id,
+        razorpay_signature
+    ):
         """
         Verify frontend payment signature (optional extra layer).
         """
 
+        key_secret = current_app.config.get("RAZORPAY_KEY_SECRET")
+
+        if not key_secret:
+            return False
+
         body = f"{razorpay_order_id}|{razorpay_payment_id}"
 
         expected_signature = hmac.new(
-            current_app.config["RAZORPAY_KEY_SECRET"].encode(),
+            key_secret.encode(),
             body.encode(),
             hashlib.sha256
         ).hexdigest()
@@ -67,7 +77,10 @@ class RazorpayService:
         This is CRITICAL for security.
         """
 
-        webhook_secret = current_app.config["RAZORPAY_WEBHOOK_SECRET"]
+        webhook_secret = current_app.config.get("RAZORPAY_WEBHOOK_SECRET")
+
+        if not webhook_secret:
+            return False
 
         expected_signature = hmac.new(
             webhook_secret.encode(),
@@ -82,4 +95,5 @@ class RazorpayService:
         """
         Safely parse webhook JSON payload.
         """
+
         return json.loads(request_body.decode("utf-8"))

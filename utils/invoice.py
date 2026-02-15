@@ -33,10 +33,21 @@ def generate_invoice(order_id, customer_name, items, total):
     data = [["Product", "Qty", "Price"]]
 
     for item in items:
+
+        # Support dict / sqlite Row / tuple
+        if isinstance(item, dict):
+            product_name = item["product_name"]
+            quantity = item["quantity"]
+            price = item["price"]
+        else:
+            product_name = item[0]
+            quantity = item[1]
+            price = item[2]
+
         data.append([
-            item["product_name"],
-            str(item["quantity"]),
-            f"₹{item['price']}"
+            product_name,
+            str(quantity),
+            f"₹{price}"
         ])
 
     data.append(["", "", ""])

@@ -24,7 +24,7 @@ class DatabaseWrapper:
                 cursor_factory=psycopg2.extras.RealDictCursor
             )
         else:
-            self.cursor = conn
+            self.cursor = conn.cursor()
 
     def execute(self, query, params=None):
 
@@ -43,8 +43,7 @@ class DatabaseWrapper:
         self.conn.commit()
 
     def close(self):
-        if self.db_type == "postgres":
-            self.cursor.close()
+        self.cursor.close()
         self.conn.close()
 
 
@@ -55,7 +54,15 @@ def get_db_connection():
     # ===============================
     if Config.DB_TYPE == "postgres":
 
-        conn = psycopg2.connect(Config.DATABASE_URI)
+        database_url = Config.DATABASE_URI
+
+        # Railway sometimes provides postgres:// instead of postgresql://
+        if database_url.startswith("postgres://"):
+            database_url = database_url.replace(
+                "postgres://", "postgresql://", 1
+            )
+
+        conn = psycopg2.connect(database_url)
         conn.autocommit = False
 
         return DatabaseWrapper(conn, "postgres")

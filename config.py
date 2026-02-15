@@ -15,6 +15,14 @@ class Config:
     DATABASE_URL = os.environ.get("DATABASE_URL")
 
     if DATABASE_URL:
+        # Normalize Railway postgres:// to postgresql://
+        if DATABASE_URL.startswith("postgres://"):
+            DATABASE_URL = DATABASE_URL.replace(
+                "postgres://",
+                "postgresql://",
+                1
+            )
+
         # Railway / Production (PostgreSQL)
         DATABASE_URI = DATABASE_URL
         DB_TYPE = "postgres"

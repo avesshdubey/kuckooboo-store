@@ -4,7 +4,6 @@ from database.db import get_db_connection
 from utils.email import send_reset_email
 import secrets
 import time
-import sqlite3
 
 auth_bp = Blueprint("auth", __name__)
 
@@ -14,6 +13,7 @@ auth_bp = Blueprint("auth", __name__)
 # =========================
 @auth_bp.route("/register", methods=["GET", "POST"])
 def register():
+
     if request.method == "POST":
         name = request.form.get("name", "").strip()
         email = request.form.get("email", "").strip().lower()
@@ -36,7 +36,8 @@ def register():
             )
             conn.commit()
 
-        except sqlite3.IntegrityError:
+        except Exception:
+            conn.rollback()
             conn.close()
             return "Email already registered"
 
@@ -51,6 +52,7 @@ def register():
 # =========================
 @auth_bp.route("/login", methods=["GET", "POST"])
 def login():
+
     if request.method == "POST":
         email = request.form.get("email", "").strip().lower()
         password = request.form.get("password", "").strip()
@@ -93,7 +95,7 @@ def logout():
 
 
 # =========================
-# FORGOT PASSWORD (SECURE VERSION)
+# FORGOT PASSWORD
 # =========================
 @auth_bp.route("/forgot-password", methods=["GET", "POST"])
 def forgot_password():
@@ -120,7 +122,8 @@ def forgot_password():
             conn.execute(
                 """
                 UPDATE users
-                SET reset_token = ?, reset_token_expiry = ?
+                SET reset_token = ?,
+                    reset_token_expiry = ?
                 WHERE email = ?
                 """,
                 (token, expiry, email)
@@ -132,13 +135,10 @@ def forgot_password():
                 token=token
             )
 
-
-            # Send email securely
             send_reset_email(email, reset_link)
 
         conn.close()
 
-        # Always same response (prevents email enumeration)
         message = "If the email exists, a reset link has been sent."
 
     return render_template(
@@ -187,6 +187,7 @@ def reset_password(token):
             """,
             (password_hash, token)
         )
+
         conn.commit()
         conn.close()
 
