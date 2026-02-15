@@ -105,7 +105,11 @@ def razorpay_webhook():
         payment_logger.info(f"Ignored event: {event}")
         return {"status": "ignored"}
 
-    payment_entity = payload["payload"]["payment"]["entity"]
+    try:
+        payment_entity = payload["payload"]["payment"]["entity"]
+    except KeyError:
+        payment_logger.error("Malformed webhook payload.")
+        abort(400)
 
     if payment_entity.get("status") != "captured":
         return {"status": "ignored"}
@@ -113,8 +117,11 @@ def razorpay_webhook():
     if payment_entity.get("currency") != "INR":
         abort(400)
 
-    razorpay_order_id = payment_entity["order_id"]
-    amount_paid = payment_entity["amount"] / 100
+    razorpay_order_id = payment_entity.get("order_id")
+    amount_paid = payment_entity.get("amount", 0) / 100
+
+    if not razorpay_order_id:
+        abort(400)
 
     conn = get_db_connection()
 
@@ -127,6 +134,7 @@ def razorpay_webhook():
         conn.close()
         abort(404)
 
+    # Idempotency protection
     if order["payment_status"] == "PAID":
         conn.close()
         return {"status": "already_processed"}
@@ -153,22 +161,25 @@ def razorpay_webhook():
         f"Payment marked PAID and order CONFIRMED for order {order['id']}"
     )
 
-    # Send email
+    # Send confirmation email (non-blocking)
     email = order.get("email")
 
     if email:
-        subject, html_content = upi_payment_confirmed_email(
-            order["full_name"],
-            order["id"],
-            order["total_amount"]
-        )
+        try:
+            subject, html_content = upi_payment_confirmed_email(
+                order["full_name"],
+                order["id"],
+                order["total_amount"]
+            )
 
-        send_email_async(
-            email,
-            subject,
-            html_content,
-            is_html=True
-        )
+            send_email_async(
+                email,
+                subject,
+                html_content,
+                is_html=True
+            )
+        except Exception as e:
+            payment_logger.error(f"Email sending failed: {str(e)}")
 
     return {"status": "success"}
 

@@ -5,12 +5,43 @@ import psycopg2.extras
 from config import Config
 
 
+class ResultWrapper:
+    """
+    Allows chaining:
+        conn.execute(...).fetchone()
+        conn.execute(...).fetchall()
+    """
+
+    def __init__(self, cursor, db_type):
+        self.cursor = cursor
+        self.db_type = db_type
+
+    def fetchone(self):
+        row = self.cursor.fetchone()
+
+        if not row:
+            return None
+
+        if self.db_type == "sqlite":
+            return dict(row)
+
+        return row
+
+    def fetchall(self):
+        rows = self.cursor.fetchall()
+
+        if self.db_type == "sqlite":
+            return [dict(row) for row in rows]
+
+        return rows
+
+
 class DatabaseWrapper:
     """
     Unifies SQLite and PostgreSQL behaviour.
     Allows using:
         conn = get_db_connection()
-        conn.execute(...)
+        conn.execute(...).fetchone()
         conn.commit()
         conn.close()
     """
@@ -19,31 +50,29 @@ class DatabaseWrapper:
         self.conn = conn
         self.db_type = db_type
 
-        if db_type == "postgres":
-            self.cursor = conn.cursor(
-                cursor_factory=psycopg2.extras.RealDictCursor
-            )
-        else:
-            self.cursor = conn.cursor()
-
     def execute(self, query, params=None):
 
-        # Convert SQLite placeholders to PostgreSQL style
+        if params is None:
+            params = []
+
+        # Convert SQLite-style ? to PostgreSQL %s
         if self.db_type == "postgres":
             query = query.replace("?", "%s")
 
-        if params:
-            self.cursor.execute(query, params)
+            cursor = self.conn.cursor(
+                cursor_factory=psycopg2.extras.RealDictCursor
+            )
         else:
-            self.cursor.execute(query)
+            cursor = self.conn.cursor()
 
-        return self.cursor
+        cursor.execute(query, params)
+
+        return ResultWrapper(cursor, self.db_type)
 
     def commit(self):
         self.conn.commit()
 
     def close(self):
-        self.cursor.close()
         self.conn.close()
 
 
@@ -56,7 +85,7 @@ def get_db_connection():
 
         database_url = Config.DATABASE_URI
 
-        # Railway sometimes provides postgres:// instead of postgresql://
+        # Railway may provide postgres://
         if database_url.startswith("postgres://"):
             database_url = database_url.replace(
                 "postgres://", "postgresql://", 1
