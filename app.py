@@ -25,12 +25,13 @@ def create_app():
     app.register_blueprint(admin_bp)
     app.register_blueprint(payment_bp)  # ✅ NEW
 
-    return app   # ✅ VERY IMPORTANT
+    
     @app.route("/__init_db_once")
     def init_db_once():
         from database.init_db import init_db
         init_db()
         return "Database initialized successfully."
+    return app   # ✅ VERY IMPORTANT
 
 
 # Create app instance
