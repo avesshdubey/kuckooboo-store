@@ -26,6 +26,16 @@ admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 UPLOAD_FOLDER = "static/uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
+# =========================
+# ADMIN DASHBOARD
+# =========================
+@admin_bp.route("/dashboard")
+def dashboard():
+    if not admin_required():
+        return redirect(url_for("auth.login"))
+
+    return render_template("admin/dashboard.html")
+
 
 # =========================
 # ADMIN CHECK
