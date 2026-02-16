@@ -427,3 +427,13 @@ def dashboard():
         low_stock_products=low_stock_products,
         daily_sales=daily_sales
     )
+@admin_bp.route("/check_coupons")
+def check_coupons():
+    conn = get_db_connection()
+    try:
+        conn.execute("SELECT COUNT(*) as c FROM coupons").fetchone()
+        conn.close()
+        return "Coupons table exists ✅"
+    except Exception as e:
+        conn.close()
+        return f"Error: {e}"
