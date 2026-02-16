@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+{% block title %}Coupon Management | Admin{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+{% endblock %}
+
+{% block content %}
+
+<section class="admin-section">
+
+    <div class="admin-container">
+
+        <!-- HEADER -->
+        <div class="admin-header">
+            <h1>Coupon Management</h1>
+            <p>Create and manage discount coupons</p>
+        </div>
+
+        <!-- =============================== -->
+        <!-- CREATE COUPON FORM -->
+        <!-- =============================== -->
+        <div class="admin-card">
+
+            <h2>Create New Coupon</h2>
+
+            <form method="POST" action="{{ url_for('admin.add_coupon') }}" class="admin-form">
+
+                <div class="form-group">
+                    <label>Coupon Code</label>
+                    <input type="text" name="code" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Discount Type</label>
+                    <select name="discount_type" required>
+                        <option value="PERCENT">Percentage (%)</option>
+                        <option value="FLAT">Flat Amount (₹)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Discount Value</label>
+                    <input type="number" step="0.01" name="discount_value" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Minimum Order Amount (₹)</label>
+                    <input type="number" step="0.01" name="min_order_amount" value="0">
+                </div>
+
+                <div class="form-group">
+                    <label>Usage Limit (0 = Unlimited)</label>
+                    <input type="number" name="usage_limit" value="0">
+                </div>
+
+                <div class="form-group">
+                    <label>Expiry Date (Unix Timestamp Optional)</label>
+                    <input type="number" name="expiry_date">
+                </div>
+
+                <button type="submit" class="btn-admin">
+                    Create Coupon
+                </button>
+
+            </form>
+
+        </div>
+
+        <!-- =============================== -->
+        <!-- COUPON LIST -->
+        <!-- =============================== -->
+        <div class="admin-table-section">
+
+            <h2>All Coupons</h2>
+
+            {% if coupons %}
+            <div class="table-wrapper">
+                <table class="admin-table">
+
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Type</th>
+                            <th>Value</th>
+                            <th>Min Order</th>
+                            <th>Usage</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for coupon in coupons %}
+                        <tr>
+                            <td>{{ coupon.code }}</td>
+                            <td>{{ coupon.discount_type }}</td>
+                            <td>
+                                {% if coupon.discount_type == "PERCENT" %}
+                                    {{ coupon.discount_value }} %
+                                {% else %}
+                                    ₹ {{ coupon.discount_value }}
+                                {% endif %}
+                            </td>
+                            <td>₹ {{ coupon.min_order_amount }}</td>
+                            <td>
+                                {{ coupon.used_count }}
+                                {% if coupon.usage_limit > 0 %}
+                                    / {{ coupon.usage_limit }}
+                                {% else %}
+                                    / Unlimited
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if coupon.is_active %}
+                                    <span class="status-badge paid">Active</span>
+                                {% else %}
+                                    <span class="status-badge danger">Disabled</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <form method="POST"
+                                      action="{{ url_for('admin.toggle_coupon', coupon_id=coupon.id) }}"
+                                      class="inline-form">
+                                    <button type="submit" class="btn-admin-small">
+                                        Toggle
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+
+                </table>
+            </div>
+
+            {% else %}
+                <p class="success-text">No coupons created yet.</p>
+            {% endif %}
+
+        </div>
+
+    </div>
+
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+{% endblock %}

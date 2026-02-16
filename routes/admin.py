@@ -427,13 +427,114 @@ def dashboard():
         low_stock_products=low_stock_products,
         daily_sales=daily_sales
     )
-@admin_bp.route("/check_coupons")
-def check_coupons():
+
+# =========================
+# LIST COUPONS
+# =========================
+@admin_bp.route("/coupons")
+def list_coupons():
+    if not admin_required():
+        return redirect(url_for("auth.login"))
+
     conn = get_db_connection()
-    try:
-        conn.execute("SELECT COUNT(*) as c FROM coupons").fetchone()
-        conn.close()
-        return "Coupons table exists ✅"
-    except Exception as e:
-        conn.close()
-        return f"Error: {e}"
+
+    coupons = conn.execute(
+        "SELECT * FROM coupons ORDER BY id DESC"
+    ).fetchall()
+
+    conn.close()
+
+    return render_template("admin/coupons.html", coupons=coupons)
+
+
+# =========================
+# ADD COUPON
+# =========================
+@admin_bp.route("/add-coupon", methods=["POST"])
+def add_coupon():
+    if not admin_required():
+        return redirect(url_for("auth.login"))
+
+    code = request.form["code"].upper().strip()
+    discount_type = request.form["discount_type"]
+    discount_value = request.form["discount_value"]
+    min_order_amount = request.form.get("min_order_amount", 0)
+    usage_limit = request.form.get("usage_limit", 0)
+    expiry_date = request.form.get("expiry_date")
+
+    created_at = int(datetime.now().timestamp())
+
+    if expiry_date:
+        expiry_date = int(datetime.strptime(expiry_date, "%Y-%m-%d").timestamp())
+    else:
+        expiry_date = None
+
+    conn = get_db_connection()
+
+    conn.execute(
+        """
+        INSERT INTO coupons
+        (code, discount_type, discount_value, min_order_amount,
+         usage_limit, used_count, expiry_date, is_active, created_at)
+        VALUES (?, ?, ?, ?, ?, 0, ?, 1, ?)
+        """,
+        (code, discount_type, discount_value,
+         min_order_amount, usage_limit,
+         expiry_date, created_at)
+    )
+
+    conn.commit()
+    conn.close()
+
+    return redirect(url_for("admin.list_coupons"))
+
+
+# =========================
+# TOGGLE COUPON ACTIVE
+# =========================
+@admin_bp.route("/toggle-coupon/<int:coupon_id>", methods=["POST"])
+def toggle_coupon(coupon_id):
+    if not admin_required():
+        return redirect(url_for("auth.login"))
+
+    conn = get_db_connection()
+
+    coupon = conn.execute(
+        "SELECT is_active FROM coupons WHERE id = ?",
+        (coupon_id,)
+    ).fetchone()
+
+    if coupon:
+        new_status = 0 if coupon["is_active"] else 1
+
+        conn.execute(
+            "UPDATE coupons SET is_active = ? WHERE id = ?",
+            (new_status, coupon_id)
+        )
+
+        conn.commit()
+
+    conn.close()
+
+    return redirect(url_for("admin.list_coupons"))
+
+
+# =========================
+# DELETE COUPON
+# =========================
+@admin_bp.route("/delete-coupon/<int:coupon_id>", methods=["POST"])
+def delete_coupon(coupon_id):
+    if not admin_required():
+        return redirect(url_for("auth.login"))
+
+    conn = get_db_connection()
+
+    conn.execute(
+        "DELETE FROM coupons WHERE id = ?",
+        (coupon_id,)
+    )
+
+    conn.commit()
+    conn.close()
+
+    return redirect(url_for("admin.list_coupons"))
