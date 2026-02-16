@@ -9,7 +9,7 @@ from routes.cart import cart_bp
 from routes.checkout import checkout_bp
 from routes.user import user_bp
 from routes.admin import admin_bp
-from routes.payment import payment_bp  # ✅ NEW
+from routes.payment import payment_bp
 
 
 def create_app():
@@ -23,39 +23,9 @@ def create_app():
     app.register_blueprint(checkout_bp)
     app.register_blueprint(user_bp)
     app.register_blueprint(admin_bp)
-    app.register_blueprint(payment_bp)  # ✅ NEW
+    app.register_blueprint(payment_bp)
 
-    
-    @app.route("/__init_db_once")
-    def init_db_once():
-        from database.init_db import init_db
-        init_db()
-        return "Database initialized successfully."
-    
-    @app.route("/__make_me_admin/<email>")
-    def make_me_admin(email):
-        from database.db import get_db_connection
-
-        conn = get_db_connection()
-
-        conn.execute(
-            "UPDATE users SET is_admin = 1 WHERE email = ?",
-            (email,)
-        )
-
-        conn.commit()
-        conn.close()
-
-        return f"{email} is now admin."
-    
-    @app.route("/__init_db_once1")
-    def init_db_once1():
-        from database.init_db import init_db
-        init_db()
-        return "DB Initialized"
-
-
-    return app   # ✅ VERY IMPORTANT
+    return app  # IMPORTANT
 
 
 # Create app instance
@@ -65,6 +35,3 @@ app = create_app()
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
-
-
-   
