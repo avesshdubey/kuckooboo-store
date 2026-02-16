@@ -87,42 +87,40 @@ def init_db():
     )
     """)
 
-        # ===============================
+    # ===============================
     # COUPONS
     # ===============================
-    conn.execute("""
-    CREATE TABLE IF NOT EXISTS coupons (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        code TEXT UNIQUE NOT NULL,
-        discount_type TEXT NOT NULL,        -- 'percentage' or 'fixed'
-        discount_value REAL NOT NULL,
-        min_order_amount REAL DEFAULT 0,
-        usage_limit INTEGER DEFAULT 0,
-        used_count INTEGER DEFAULT 0,
-        expiry_date INTEGER,
-        is_active INTEGER DEFAULT 1,
-        created_at INTEGER
-    )
-    """)
+    if Config.DB_TYPE == "postgres":
+        conn.execute("""
+        CREATE TABLE IF NOT EXISTS coupons (
+            id SERIAL PRIMARY KEY,
+            code TEXT UNIQUE NOT NULL,
+            discount_type TEXT NOT NULL,
+            discount_value REAL NOT NULL,
+            min_order_amount REAL DEFAULT 0,
+            usage_limit INTEGER DEFAULT 0,
+            used_count INTEGER DEFAULT 0,
+            expiry_date INTEGER,
+            is_active INTEGER DEFAULT 1,
+            created_at INTEGER
+        )
+        """)
+    else:
+        conn.execute("""
+        CREATE TABLE IF NOT EXISTS coupons (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            code TEXT UNIQUE NOT NULL,
+            discount_type TEXT NOT NULL,
+            discount_value REAL NOT NULL,
+            min_order_amount REAL DEFAULT 0,
+            usage_limit INTEGER DEFAULT 0,
+            used_count INTEGER DEFAULT 0,
+            expiry_date INTEGER,
+            is_active INTEGER DEFAULT 1,
+            created_at INTEGER
+        )
+        """)
 
-
-    # ===============================
-    # REVIEWS
-    # ===============================
-    conn.execute(f"""
-    CREATE TABLE IF NOT EXISTS reviews (
-        id {pk},
-        product_id {int_type},
-        user_id {int_type},
-        rating {int_type} NOT NULL,
-        review_text TEXT,
-        media_file TEXT,
-        media_type TEXT,
-        created_at {int_type},
-        FOREIGN KEY (product_id) REFERENCES products(id),
-        FOREIGN KEY (user_id) REFERENCES users(id)
-    )
-    """)
 
     conn.commit()
     conn.close()
