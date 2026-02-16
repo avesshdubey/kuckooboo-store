@@ -87,6 +87,25 @@ def init_db():
     )
     """)
 
+        # ===============================
+    # COUPONS
+    # ===============================
+    conn.execute("""
+    CREATE TABLE IF NOT EXISTS coupons (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        code TEXT UNIQUE NOT NULL,
+        discount_type TEXT NOT NULL,        -- 'percentage' or 'fixed'
+        discount_value REAL NOT NULL,
+        min_order_amount REAL DEFAULT 0,
+        usage_limit INTEGER DEFAULT 0,
+        used_count INTEGER DEFAULT 0,
+        expiry_date INTEGER,
+        is_active INTEGER DEFAULT 1,
+        created_at INTEGER
+    )
+    """)
+
+
     # ===============================
     # REVIEWS
     # ===============================

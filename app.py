@@ -47,6 +47,13 @@ def create_app():
         conn.close()
 
         return f"{email} is now admin."
+    
+    @app.route("/__init_db_once1")
+    def init_db_once1():
+        from database.init_db import init_db
+        init_db()
+        return "DB Initialized"
+
 
     return app   # ✅ VERY IMPORTANT
 
