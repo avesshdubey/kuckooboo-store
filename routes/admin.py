@@ -3,13 +3,11 @@ Admin Blueprint
 ---------------
 Handles:
 - Add products
-- Edit products (image + new arrival)
+- List products
+- Edit products
 - Delete products
 - View all orders
-- Update order status
-- Mark UPI orders as PAID
 - Admin dashboard
-- Order detail view
 
 Access:
 - Admin only (is_admin = 1)
@@ -21,15 +19,6 @@ from flask import Blueprint, render_template, request, redirect, url_for, sessio
 from database.db import get_db_connection
 from datetime import datetime
 from werkzeug.utils import secure_filename
-from utils.email_queue import send_email_async
-from utils.email import send_email
-from utils.email_templates import (
-    order_confirmed_email,
-    order_shipped_email,
-    order_delivered_email,
-    upi_payment_confirmed_email,
-    review_reminder_email
-)
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 
@@ -54,6 +43,29 @@ def admin_required():
     conn.close()
 
     return user and int(user["is_admin"]) == 1
+
+
+# =========================
+# LIST ALL PRODUCTS
+# =========================
+@admin_bp.route("/products")
+def list_products():
+    if not admin_required():
+        return redirect(url_for("auth.login"))
+
+    conn = get_db_connection()
+
+    products = conn.execute(
+        """
+        SELECT id, name, price, stock, is_new, category
+        FROM products
+        ORDER BY id DESC
+        """
+    ).fetchall()
+
+    conn.close()
+
+    return render_template("admin/products.html", products=products)
 
 
 # =========================
@@ -93,10 +105,90 @@ def add_product():
 
         conn.commit()
         conn.close()
-        return redirect(url_for("admin.add_product"))
+        return redirect(url_for("admin.list_products"))
 
     conn.close()
     return render_template("admin/add_product.html")
+
+
+# =========================
+# EDIT PRODUCT
+# =========================
+@admin_bp.route("/edit/<int:product_id>", methods=["GET", "POST"])
+def edit_product(product_id):
+    if not admin_required():
+        return redirect(url_for("auth.login"))
+
+    conn = get_db_connection()
+
+    product = conn.execute(
+        "SELECT * FROM products WHERE id = ?",
+        (product_id,)
+    ).fetchone()
+
+    if not product:
+        conn.close()
+        return "Product not found", 404
+
+    if request.method == "POST":
+        name = request.form["name"]
+        price = request.form["price"]
+        stock = request.form["stock"]
+        description = request.form["description"]
+        is_new = 1 if request.form.get("is_new") else 0
+        category = request.form.get("category", "General")
+
+        image_file = request.files.get("image")
+        image_name = product["image"]
+
+        if image_file and image_file.filename:
+            safe_name = secure_filename(image_file.filename)
+            image_name = f"{int(time.time())}_{safe_name}"
+            image_file.save(os.path.join(UPLOAD_FOLDER, image_name))
+
+        conn.execute(
+            """
+            UPDATE products
+            SET name = ?,
+                price = ?,
+                stock = ?,
+                description = ?,
+                image = ?,
+                is_new = ?,
+                category = ?
+            WHERE id = ?
+            """,
+            (name, price, stock, description,
+             image_name, is_new, category, product_id)
+        )
+
+        conn.commit()
+        conn.close()
+        return redirect(url_for("admin.list_products"))
+
+    conn.close()
+    return render_template("admin/edit_product.html", product=product)
+
+
+# =========================
+# DELETE PRODUCT
+# =========================
+@admin_bp.route("/delete/<int:product_id>", methods=["POST"])
+def delete_product(product_id):
+    if not admin_required():
+        return redirect(url_for("auth.login"))
+
+    conn = get_db_connection()
+
+    conn.execute(
+        "DELETE FROM products WHERE id = ?",
+        (product_id,)
+    )
+
+    conn.commit()
+    conn.close()
+
+    return redirect(url_for("admin.list_products"))
 
 
 # =========================
@@ -177,7 +269,6 @@ def dashboard():
         """
     ).fetchone()["total"]
 
-    # 🔥 Fix: Ensure daily_sales always exists
     daily_sales = []
 
     conn.close()

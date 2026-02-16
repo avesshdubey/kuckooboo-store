@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+{% block title %}Manage Products | Admin{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+{% endblock %}
+
+{% block content %}
+
+<section class="admin-section">
+
+    <div class="admin-container">
+
+        <div class="admin-header">
+            <h1>All Products</h1>
+            <p>Manage product inventory and details</p>
+
+            <a href="{{ url_for('admin.add_product') }}" class="btn-admin">
+                + Add New Product
+            </a>
+        </div>
+
+        {% if products %}
+        <div class="table-wrapper">
+
+            <table class="admin-table">
+
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Category</th>
+                        <th>Price (₹)</th>
+                        <th>Stock</th>
+                        <th>New</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for product in products %}
+                    <tr>
+
+                        <td>#{{ product.id }}</td>
+
+                        <td>
+                            <strong>{{ product.name }}</strong>
+                        </td>
+
+                        <td>
+                            {{ product.category or "General" }}
+                        </td>
+
+                        <td>
+                            ₹ {{ product.price }}
+                        </td>
+
+                        <td>
+                            {% if product.stock > 0 %}
+                                <span class="stock-available">
+                                    {{ product.stock }}
+                                </span>
+                            {% else %}
+                                <span class="stock-empty">
+                                    0
+                                </span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            {% if product.is_new %}
+                                <span class="status-badge new">
+                                    YES
+                                </span>
+                            {% else %}
+                                —
+                            {% endif %}
+                        </td>
+
+                        <td class="admin-actions">
+
+                            <!-- Edit -->
+                            <a href="{{ url_for('admin.edit_product', product_id=product.id) }}"
+                               class="btn-admin-small">
+                                Edit
+                            </a>
+
+                            <!-- Delete -->
+                            <form method="POST"
+                                  action="{{ url_for('admin.delete_product', product_id=product.id) }}"
+                                  style="display:inline;"
+                                  onsubmit="return confirm('Delete this product permanently?');">
+
+                                <button type="submit" class="btn-delete">
+                                    Delete
+                                </button>
+
+                            </form>
+
+                        </td>
+
+                    </tr>
+                    {% endfor %}
+                </tbody>
+
+            </table>
+
+        </div>
+
+        {% else %}
+
+        <div class="empty-state">
+            <p>No products found.</p>
+            <a href="{{ url_for('admin.add_product') }}" class="btn-admin">
+                Add Your First Product
+            </a>
+        </div>
+
+        {% endif %}
+
+    </div>
+
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+{% endblock %}

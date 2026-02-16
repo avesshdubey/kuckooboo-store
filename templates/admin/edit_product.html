@@ -55,6 +55,17 @@
                 >
             </div>
 
+            <!-- Category -->
+            <div class="form-group">
+                <label for="category">Category</label>
+                <input
+                    id="category"
+                    name="category"
+                    type="text"
+                    value="{{ product.category or 'General' }}"
+                >
+            </div>
+
             <!-- Description -->
             <div class="form-group">
                 <label for="description">Description</label>
@@ -63,7 +74,7 @@
                     name="description"
                     rows="4"
                     required
-                >{{ product.description }}</textarea>
+                >{{ product.description or '' }}</textarea>
             </div>
 
             <!-- Existing Image Preview -->
@@ -101,9 +112,15 @@
                 <label for="is_new">Mark as New Arrival</label>
             </div>
 
-            <button type="submit" class="btn-admin">
-                Update Product
-            </button>
+            <div class="admin-actions-row">
+                <button type="submit" class="btn-admin">
+                    Update Product
+                </button>
+
+                <a href="{{ url_for('admin.list_products') }}" class="btn-admin-secondary">
+                    Back to Products
+                </a>
+            </div>
 
         </form>
 
