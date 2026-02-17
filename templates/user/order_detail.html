@@ -9,8 +9,14 @@
 
 <section class="order-detail-section">
 
+    <!-- ================= HEADER ================= -->
     <div class="order-header">
-        <h1>Order #{{ order.id }}</h1>
+        <div>
+            <h1>Order #{{ order.id }}</h1>
+            <p class="order-date">
+                Placed on {{ order.created_at }}
+            </p>
+        </div>
 
         <div class="order-meta">
             <span class="status-badge order-status">
@@ -33,6 +39,27 @@
         </div>
     </div>
 
+
+    <!-- ================= STATUS TRACKER ================= -->
+    <div class="order-tracker">
+
+        {% set steps = ["PLACED","CONFIRMED","SHIPPED","DELIVERED"] %}
+
+        {% for step in steps %}
+        <div class="tracker-step
+            {% if steps.index(step) <= steps.index(order.order_status) %}
+                active
+            {% endif %}
+        ">
+            <div class="tracker-circle"></div>
+            <span>{{ step }}</span>
+        </div>
+        {% endfor %}
+
+    </div>
+
+
+    <!-- ================= ITEMS TABLE ================= -->
     <div class="table-wrapper">
         <table class="items-table">
             <thead>
@@ -49,34 +76,44 @@
                 <tr>
                     <td>{{ item.product_name }}</td>
                     <td>{{ item.quantity }}</td>
-                    <td>₹ {{ item.price }}</td>
-                    <td>₹ {{ item.quantity * item.price }}</td>
+                    <td>₹ {{ "%.2f"|format(item.price) }}</td>
+                    <td>₹ {{ "%.2f"|format(item.quantity * item.price) }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
 
-    <div class="order-total">
-        <strong>Total: ₹ {{ order.total_amount }}</strong>
+
+    <!-- ================= TOTAL ================= -->
+    <div class="order-total-card">
+        <div class="total-row">
+            <span>Grand Total</span>
+            <strong>₹ {{ "%.2f"|format(order.total_amount) }}</strong>
+        </div>
     </div>
 
-    <!-- Cancel Order Button (Only for PLACED or CONFIRMED) -->
+
+    <!-- ================= CANCEL BUTTON ================= -->
     {% if order.order_status in ["PLACED", "CONFIRMED"] %}
     <div class="cancel-order-section">
         <form method="POST"
-              action="{{ url_for('user.cancel_order', order_id=order.id) }}">
-            <button type="submit"
-                    style="background:red;color:white;padding:10px 20px;border:none;border-radius:6px;cursor:pointer;">
+              action="{{ url_for('user.cancel_order', order_id=order.id) }}"
+              onsubmit="return confirm('Are you sure you want to cancel this order?');">
+
+            <button type="submit" class="btn-cancel">
                 Cancel Order
             </button>
+
         </form>
     </div>
     {% endif %}
 
+
+    <!-- ================= BACK ================= -->
     <div class="back-link">
         <a href="{{ url_for('user.my_orders') }}">
-            ← Back to orders
+            ← Back to Orders
         </a>
     </div>
 

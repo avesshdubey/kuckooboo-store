@@ -20,13 +20,12 @@
 
             <thead>
                 <tr>
-                    <th>Order ID</th>
-                    <th>Track</th>
+                    <th>Order</th>
                     <th>Total</th>
-                    <th>Payment Method</th>
-                    <th>Order Status</th>
-                    <th>Payment Status</th>
+                    <th>Payment</th>
+                    <th>Status</th>
                     <th>Date</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
 
@@ -34,30 +33,26 @@
                 {% for order in orders %}
                 <tr>
 
+                    <!-- ORDER ID -->
                     <td>
-                        <a href="{{ url_for('user.order_detail', order_id=order.id) }}">
-                            #{{ order.id }}
-                        </a>
+                        <div class="order-id">
+                            <a href="{{ url_for('user.order_detail', order_id=order.id) }}">
+                                #{{ order.id }}
+                            </a>
+                        </div>
                     </td>
 
+                    <!-- TOTAL -->
                     <td>
-                        <a href="{{ url_for('user.track_order', order_id=order.id) }}"
-                           class="track-link">
-                            Track Order
-                        </a>
+                        <strong>₹ {{ "%.2f"|format(order.total_amount) }}</strong>
                     </td>
 
-                    <td>₹ {{ order.total_amount }}</td>
-
-                    <td>{{ order.payment_method }}</td>
-
+                    <!-- PAYMENT METHOD -->
                     <td>
-                        <span class="status-badge order-status">
-                            {{ order.order_status }}
-                        </span>
-                    </td>
+                        <div class="payment-method">
+                            {{ order.payment_method }}
+                        </div>
 
-                    <td>
                         <span class="status-badge
                             {% if order.payment_status == 'PAID' %}
                                 paid
@@ -69,7 +64,32 @@
                         </span>
                     </td>
 
-                    <td>{{ order.created_at }}</td>
+                    <!-- ORDER STATUS -->
+                    <td>
+                        <span class="status-badge order-status">
+                            {{ order.order_status }}
+                        </span>
+                    </td>
+
+                    <!-- DATE -->
+                    <td>
+                        {{ order.created_at }}
+                    </td>
+
+                    <!-- ACTIONS -->
+                    <td class="action-buttons">
+
+                        <a href="{{ url_for('user.track_order', order_id=order.id) }}"
+                           class="btn-track">
+                            Track
+                        </a>
+
+                        <a href="{{ url_for('user.order_detail', order_id=order.id) }}"
+                           class="btn-view">
+                            Details
+                        </a>
+
+                    </td>
 
                 </tr>
                 {% endfor %}
@@ -77,8 +97,14 @@
 
         </table>
     </div>
+
     {% else %}
-        <p class="no-orders">You have not placed any orders yet.</p>
+        <div class="empty-orders">
+            <p>You have not placed any orders yet.</p>
+            <a href="{{ url_for('shop.home') }}" class="btn-primary">
+                Start Shopping
+            </a>
+        </div>
     {% endif %}
 
 </section>
