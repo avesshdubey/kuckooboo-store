@@ -23,13 +23,7 @@
                 {{ order.order_status }}
             </span>
 
-            <span class="status-badge
-                {% if order.payment_status == 'PAID' %}
-                    paid
-                {% else %}
-                    pending
-                {% endif %}
-            ">
+            <span class="status-badge {% if order.payment_status == 'PAID' %}paid{% else %}pending{% endif %}">
                 {{ order.payment_status }}
             </span>
 
@@ -45,16 +39,24 @@
 
         {% set steps = ["PLACED","CONFIRMED","SHIPPED","DELIVERED"] %}
 
-        {% for step in steps %}
-        <div class="tracker-step
-            {% if steps.index(step) <= steps.index(order.order_status) %}
-                active
-            {% endif %}
-        ">
-            <div class="tracker-circle"></div>
-            <span>{{ step }}</span>
-        </div>
-        {% endfor %}
+        {% if order.order_status == "CANCELLED" %}
+
+            <div class="tracker-cancelled">
+                ❌ Order Cancelled
+            </div>
+
+        {% else %}
+
+            {% set current_index = steps.index(order.order_status) if order.order_status in steps else -1 %}
+
+            {% for step in steps %}
+            <div class="tracker-step {% if steps.index(step) <= current_index %}active{% endif %}">
+                <div class="tracker-circle"></div>
+                <span>{{ step }}</span>
+            </div>
+            {% endfor %}
+
+        {% endif %}
 
     </div>
 

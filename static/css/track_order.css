@@ -1,0 +1,84 @@
+.track-section {
+    max-width: 900px;
+    margin: 50px auto;
+    padding: 20px;
+}
+
+.track-card {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+}
+
+.track-meta {
+    margin: 15px 0;
+}
+
+.badge {
+    display: inline-block;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    margin-right: 8px;
+    background: #eee;
+}
+
+.badge.paid {
+    background: #d4edda;
+    color: #155724;
+}
+
+.badge.pending {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.progress-container {
+    margin-top: 25px;
+}
+
+.progress-step {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+    padding: 12px;
+    border-radius: 8px;
+    background: #f1f1f1;
+    transition: 0.3s ease;
+}
+
+.progress-step.active {
+    background: #d4edda;
+}
+
+.progress-step .circle {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #ccc;
+    margin-right: 12px;
+}
+
+.progress-step.active .circle {
+    background: #28a745;
+}
+
+.cancelled-box {
+    background: #f8d7da;
+    color: #721c24;
+    padding: 15px;
+    border-radius: 8px;
+    font-weight: 600;
+    margin-top: 20px;
+}
+
+.back-link {
+    margin-top: 25px;
+}
+
+.back-link a {
+    text-decoration: none;
+    color: #ff7fa5;
+    font-weight: 500;
+}

@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Track Order #{{ order.id }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/track_order.css') }}">
+{% endblock %}
+
+{% block content %}
+
+<section class="track-section">
+
+    <div class="track-card">
+
+        <h1>Track Order #{{ order.id }}</h1>
+
+        <div class="track-meta">
+            <span class="badge order-status">
+                {{ order.order_status }}
+            </span>
+
+            <span class="badge {% if order.payment_status == 'PAID' %}paid{% else %}pending{% endif %}">
+                {{ order.payment_status }}
+            </span>
+        </div>
+
+        <hr>
+
+        <h3>Order Progress</h3>
+
+        {% set steps = ["PLACED", "CONFIRMED", "SHIPPED", "DELIVERED"] %}
+
+        {% if order.order_status == "CANCELLED" %}
+
+            <div class="cancelled-box">
+                ❌ This order has been cancelled.
+            </div>
+
+        {% else %}
+
+            {% set current_index = steps.index(order.order_status) if order.order_status in steps else -1 %}
+
+            <div class="progress-container">
+
+                {% for step in steps %}
+                <div class="progress-step {% if steps.index(step) <= current_index %}active{% endif %}">
+                    <div class="circle"></div>
+                    <span>{{ step }}</span>
+                </div>
+                {% endfor %}
+
+            </div>
+
+        {% endif %}
+
+        <div class="back-link">
+            <a href="{{ url_for('user.my_orders') }}">← Back to Orders</a>
+        </div>
+
+    </div>
+
+</section>
+
+{% endblock %}
