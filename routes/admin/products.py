@@ -1,9 +1,10 @@
 import os
 import time
 from flask import render_template, request, redirect, url_for, session
-from database.db import get_db_connection
 from werkzeug.utils import secure_filename
+from database.db import get_db_connection
 from . import admin_bp
+
 
 UPLOAD_FOLDER = "static/uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -35,9 +36,15 @@ def list_products():
         return redirect(url_for("auth.login"))
 
     conn = get_db_connection()
+
     products = conn.execute(
-        "SELECT * FROM products ORDER BY id DESC"
+        """
+        SELECT id, name, price, stock, is_new, category, image
+        FROM products
+        ORDER BY id DESC
+        """
     ).fetchall()
+
     conn.close()
 
     return render_template("admin/products.html", products=products)
@@ -55,11 +62,12 @@ def add_product():
 
     if request.method == "POST":
         name = request.form["name"]
-        price = request.form["price"]
-        stock = request.form["stock"]
+        price = float(request.form["price"])
+        stock = int(request.form["stock"])
         description = request.form["description"]
         is_new = 1 if request.form.get("is_new") else 0
         category = request.form.get("category", "General")
+        created_at = int(time.time())
 
         image_file = request.files.get("image")
         image_name = None
@@ -72,14 +80,16 @@ def add_product():
         conn.execute(
             """
             INSERT INTO products
-            (name, price, stock, description, image, is_new, category)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            (name, price, stock, description, image, is_new, category, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             """,
-            (name, price, stock, description, image_name, is_new, category)
+            (name, price, stock, description,
+             image_name, is_new, category, created_at)
         )
 
         conn.commit()
         conn.close()
+
         return redirect(url_for("admin.list_products"))
 
     conn.close()
@@ -107,8 +117,8 @@ def edit_product(product_id):
 
     if request.method == "POST":
         name = request.form["name"]
-        price = request.form["price"]
-        stock = request.form["stock"]
+        price = float(request.form["price"])
+        stock = int(request.form["stock"])
         description = request.form["description"]
         is_new = 1 if request.form.get("is_new") else 0
         category = request.form.get("category", "General")
@@ -124,9 +134,14 @@ def edit_product(product_id):
         conn.execute(
             """
             UPDATE products
-            SET name=?, price=?, stock=?, description=?,
-                image=?, is_new=?, category=?
-            WHERE id=?
+            SET name = ?,
+                price = ?,
+                stock = ?,
+                description = ?,
+                image = ?,
+                is_new = ?,
+                category = ?
+            WHERE id = ?
             """,
             (name, price, stock, description,
              image_name, is_new, category, product_id)
@@ -134,6 +149,7 @@ def edit_product(product_id):
 
         conn.commit()
         conn.close()
+
         return redirect(url_for("admin.list_products"))
 
     conn.close()
@@ -149,10 +165,12 @@ def delete_product(product_id):
         return redirect(url_for("auth.login"))
 
     conn = get_db_connection()
+
     conn.execute(
         "DELETE FROM products WHERE id = ?",
         (product_id,)
     )
+
     conn.commit()
     conn.close()
 
