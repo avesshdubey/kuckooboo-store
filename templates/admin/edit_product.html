@@ -83,7 +83,7 @@
                 <label>Current Image</label>
                 <div class="image-preview">
                     <img
-                        src="{{ url_for('static', filename='uploads/' ~ product.image) }}"
+                        src="{{ product.image }}"
                         alt="{{ product.name }}"
                     >
                 </div>

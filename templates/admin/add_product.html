@@ -17,7 +17,10 @@
             <p>Create a new product listing.</p>
         </div>
 
-        <form method="POST" class="admin-form">
+        <!-- IMPORTANT: enctype added -->
+        <form method="POST"
+              enctype="multipart/form-data"
+              class="admin-form">
 
             <!-- Product Name -->
             <div class="form-group">
@@ -77,6 +80,42 @@
                     rows="4"
                     placeholder="Write product description"
                 ></textarea>
+            </div>
+
+            <!-- MULTIPLE IMAGES -->
+            <div class="form-group">
+                <label for="images">Upload Product Images</label>
+                <input
+                    type="file"
+                    id="images"
+                    name="images"
+                    multiple
+                    accept="image/*"
+                    required
+                >
+                <small>You can select multiple images</small>
+            </div>
+
+            <!-- OPTIONAL VIDEO -->
+            <div class="form-group">
+                <label for="video">Upload Product Video (Optional)</label>
+                <input
+                    type="file"
+                    id="video"
+                    name="video"
+                    accept="video/*"
+                >
+                <small>MP4 recommended</small>
+            </div>
+
+            <!-- New Arrival -->
+            <div class="form-group checkbox-group">
+                <input
+                    type="checkbox"
+                    id="is_new"
+                    name="is_new"
+                >
+                <label for="is_new">Mark as New Arrival</label>
             </div>
 
             <button type="submit" class="btn-admin">

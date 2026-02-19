@@ -1,13 +1,22 @@
-import os
 import time
 from flask import render_template, request, redirect, url_for, session
-from werkzeug.utils import secure_filename
 from database.db import get_db_connection
 from . import admin_bp
 
+import cloudinary
+import cloudinary.uploader
+import os
 
-UPLOAD_FOLDER = "static/uploads"
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+# =========================
+# CLOUDINARY CONFIG
+# =========================
+cloudinary.config(
+    cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME"),
+    api_key=os.getenv("CLOUDINARY_API_KEY"),
+    api_secret=os.getenv("CLOUDINARY_API_SECRET"),
+    secure=True
+)
 
 
 # =========================
@@ -69,23 +78,62 @@ def add_product():
         category = request.form.get("category", "General")
         created_at = int(time.time())
 
-        image_file = request.files.get("image")
-        image_name = None
-
-        if image_file and image_file.filename:
-            safe_name = secure_filename(image_file.filename)
-            image_name = f"{int(time.time())}_{safe_name}"
-            image_file.save(os.path.join(UPLOAD_FOLDER, image_name))
-
-        conn.execute(
+        # Insert product first
+        cursor = conn.execute(
             """
             INSERT INTO products
-            (name, price, stock, description, image, is_new, category, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            (name, price, stock, description, is_new, category, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            RETURNING id
             """,
             (name, price, stock, description,
-             image_name, is_new, category, created_at)
+             is_new, category, created_at)
         )
+
+        product_id = cursor.fetchone()["id"]
+
+        # Handle Multiple Images
+        images = request.files.getlist("images")
+
+        for image in images:
+            if image and image.filename:
+                upload_result = cloudinary.uploader.upload(image)
+                conn.execute(
+                    """
+                    INSERT INTO product_media
+                    (product_id, media_url, media_type, created_at)
+                    VALUES (?, ?, ?, ?)
+                    """,
+                    (
+                        product_id,
+                        upload_result["secure_url"],
+                        "image",
+                        int(time.time())
+                    )
+                )
+
+        # Handle Optional Video
+        video = request.files.get("video")
+
+        if video and video.filename:
+            upload_result = cloudinary.uploader.upload(
+                video,
+                resource_type="video"
+            )
+
+            conn.execute(
+                """
+                INSERT INTO product_media
+                (product_id, media_url, media_type, created_at)
+                VALUES (?, ?, ?, ?)
+                """,
+                (
+                    product_id,
+                    upload_result["secure_url"],
+                    "video",
+                    int(time.time())
+                )
+            )
 
         conn.commit()
         conn.close()
@@ -94,7 +142,6 @@ def add_product():
 
     conn.close()
     return render_template("admin/add_product.html")
-
 
 # =========================
 # EDIT PRODUCT
@@ -124,12 +171,12 @@ def edit_product(product_id):
         category = request.form.get("category", "General")
 
         image_file = request.files.get("image")
-        image_name = product["image"]
+        image_url = product["image"]
 
+        # If new image uploaded → replace in Cloudinary
         if image_file and image_file.filename:
-            safe_name = secure_filename(image_file.filename)
-            image_name = f"{int(time.time())}_{safe_name}"
-            image_file.save(os.path.join(UPLOAD_FOLDER, image_name))
+            upload_result = cloudinary.uploader.upload(image_file)
+            image_url = upload_result["secure_url"]
 
         conn.execute(
             """
@@ -144,7 +191,7 @@ def edit_product(product_id):
             WHERE id = ?
             """,
             (name, price, stock, description,
-             image_name, is_new, category, product_id)
+             image_url, is_new, category, product_id)
         )
 
         conn.commit()

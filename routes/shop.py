@@ -83,6 +83,7 @@ def product_detail(product_id):
 
     conn = get_db_connection()
 
+    # ---- PRODUCT ----
     product = conn.execute(
         "SELECT * FROM products WHERE id = ?",
         (product_id,)
@@ -92,6 +93,18 @@ def product_detail(product_id):
         conn.close()
         return "Product not found", 404
 
+    # ---- PRODUCT MEDIA (NEW) ----
+    media = conn.execute(
+        """
+        SELECT media_url, media_type
+        FROM product_media
+        WHERE product_id = ?
+        ORDER BY id ASC
+        """,
+        (product_id,)
+    ).fetchall()
+
+    # ---- REVIEWS ----
     reviews = conn.execute(
         """
         SELECT r.*, u.name as user_name
@@ -103,6 +116,7 @@ def product_detail(product_id):
         (product_id,)
     ).fetchall()
 
+    # ---- AVG RATING ----
     avg_rating_data = conn.execute(
         """
         SELECT AVG(rating) as avg_rating,
@@ -139,11 +153,13 @@ def product_detail(product_id):
     return render_template(
         "shop/product_detail.html",
         product=product,
+        media=media,                     # ✅ IMPORTANT FIX
         reviews=reviews,
         avg_rating=avg_rating,
         total_reviews=total_reviews,
         can_review=can_review
     )
+
 
 
 # =========================
