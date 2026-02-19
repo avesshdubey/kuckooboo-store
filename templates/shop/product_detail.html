@@ -30,20 +30,22 @@
 
                         {% if first.media_type == "image" %}
                             <img id="mainMedia"
-                                 src="{{ url_for('static', filename='uploads/' ~ first.media_url) }}"
+                                 src="{{ first.media_url }}"
+                                 alt="{{ product.name }}"
                                  class="main-media">
                         {% elif first.media_type == "video" %}
                             <video id="mainMedia"
                                    class="main-media"
                                    controls>
-                                <source src="{{ url_for('static', filename='uploads/' ~ first.media_url) }}">
+                                <source src="{{ first.media_url }}">
                             </video>
                         {% endif %}
 
                     {% elif product.image %}
-                        <!-- Fallback for old products -->
+                        <!-- fallback for old products -->
                         <img id="mainMedia"
-                             src="{{ url_for('static', filename='uploads/' ~ product.image) }}"
+                             src="{{ product.image }}"
+                             alt="{{ product.name }}"
                              class="main-media">
                     {% else %}
                         <p>No media available</p>
@@ -56,18 +58,20 @@
                 <div class="thumbnail-row">
 
                     {% for item in media %}
+
                         {% if item.media_type == "image" %}
                             <img
-                                src="{{ url_for('static', filename='uploads/' ~ item.media_url) }}"
+                                src="{{ item.media_url }}"
                                 class="thumb"
-                                onclick="changeMedia(this.src, 'image')">
+                                onclick="changeMedia('{{ item.media_url }}', 'image')">
                         {% elif item.media_type == "video" %}
                             <video
                                 class="thumb"
-                                onclick="changeMedia(this.querySelector('source').src, 'video')">
-                                <source src="{{ url_for('static', filename='uploads/' ~ item.media_url) }}">
+                                onclick="changeMedia('{{ item.media_url }}', 'video')">
+                                <source src="{{ item.media_url }}">
                             </video>
                         {% endif %}
+
                     {% endfor %}
 
                 </div>
@@ -91,6 +95,7 @@
                 ₹ {{ product.price }}
             </p>
 
+            <!-- ⭐ Rating -->
             <div class="rating-summary">
                 <strong>⭐ {{ avg_rating }} / 5</strong>
                 <span>({{ total_reviews }} reviews)</span>
@@ -166,7 +171,7 @@ function changeMedia(src, type) {
             `<img src="${src}" class="main-media">`;
     } else {
         container.innerHTML =
-            `<video class="main-media" controls>
+            `<video class="main-media" controls autoplay>
                 <source src="${src}">
              </video>`;
     }
