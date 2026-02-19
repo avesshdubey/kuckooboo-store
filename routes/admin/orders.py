@@ -119,7 +119,7 @@ def order_detail(order_id):
 # =========================
 # UPDATE ORDER STATUS
 # =========================
-@admin_bp.route("/update-order-status/<int:order_id>", methods=["POST"])
+@admin_bp.route("/update-status/<int:order_id>", methods=["POST"])
 def update_order_status(order_id):
     if not admin_required():
         return redirect(url_for("auth.login"))
