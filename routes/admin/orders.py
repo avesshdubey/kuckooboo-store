@@ -2,7 +2,7 @@ from flask import render_template, redirect, url_for, session, request
 from database.db import get_db_connection
 from datetime import datetime
 from . import admin_bp
-
+from datetime import datetime
 
 # =========================
 # ADMIN CHECK
@@ -119,24 +119,57 @@ def order_detail(order_id):
 # =========================
 # UPDATE ORDER STATUS
 # =========================
-@admin_bp.route("/update-status/<int:order_id>", methods=["POST"])
+@admin_bp.route("/update-order-status/<int:order_id>", methods=["POST"])
 def update_order_status(order_id):
     if not admin_required():
         return redirect(url_for("auth.login"))
 
-    new_status = request.form["order_status"]
+    new_status = request.form.get("order_status")
 
     conn = get_db_connection()
 
-    conn.execute(
-        "UPDATE orders SET order_status = ? WHERE id = ?",
-        (new_status, order_id)
-    )
+    # Get current status
+    order = conn.execute(
+        "SELECT order_status FROM orders WHERE id = ?",
+        (order_id,)
+    ).fetchone()
 
-    conn.commit()
+    if not order:
+        conn.close()
+        return redirect(url_for("admin.view_orders"))
+
+    old_status = order["order_status"]
+
+    # Only update if changed
+    if new_status and new_status != old_status:
+
+        # Update main orders table
+        conn.execute(
+            "UPDATE orders SET order_status = ? WHERE id = ?",
+            (new_status, order_id)
+        )
+
+        # Insert into history table
+        conn.execute(
+            """
+            INSERT INTO order_status_history
+            (order_id, status, message, created_at)
+            VALUES (?, ?, ?, ?)
+            """,
+            (
+                order_id,
+                new_status,
+                f"Order moved to {new_status}",
+                int(datetime.now().timestamp())
+            )
+        )
+
+        conn.commit()
+
     conn.close()
 
     return redirect(url_for("admin.view_orders"))
+
 
 
 # =========================

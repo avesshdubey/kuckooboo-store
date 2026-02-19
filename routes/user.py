@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, session, redirect, url_for
+from flask import Blueprint, render_template, session, redirect, url_for, request
 from database.db import get_db_connection
 from datetime import datetime, timedelta
 
@@ -6,7 +6,7 @@ user_bp = Blueprint("user", __name__, url_prefix="/user")
 
 
 # =========================
-# HELPER
+# HELPERS
 # =========================
 def format_timestamp(ts):
     if not ts:
@@ -14,46 +14,18 @@ def format_timestamp(ts):
     return datetime.fromtimestamp(ts).strftime("%d %b %Y, %I:%M %p")
 
 
-def calculate_estimated_delivery(created_ts):
+def calculate_estimated_delivery(created_ts, status):
     if not created_ts:
         return None
-    delivery_date = datetime.fromtimestamp(created_ts) + timedelta(days=3)
-    return delivery_date.strftime("%d %b %Y")
 
+    base = datetime.fromtimestamp(created_ts)
 
-# =========================
-# USER DASHBOARD
-# =========================
-@user_bp.route("/dashboard")
-def dashboard():
-    if not session.get("user_id"):
-        return redirect(url_for("auth.login"))
+    # If shipped, add 3 days from shipped time
+    if status == "SHIPPED":
+        return (base + timedelta(days=3)).strftime("%d %b %Y")
 
-    conn = get_db_connection()
-
-    orders = conn.execute("""
-        SELECT id, total_amount, payment_method,
-               payment_status, order_status, created_at
-        FROM orders
-        WHERE user_id = ?
-        ORDER BY id DESC
-    """, (session["user_id"],)).fetchall()
-
-    conn.close()
-
-    formatted_orders = []
-
-    for order in orders:
-        formatted_orders.append({
-            "id": order["id"],
-            "total_amount": order["total_amount"],
-            "payment_method": order["payment_method"],
-            "payment_status": order["payment_status"],
-            "order_status": order["order_status"],
-            "created_at": format_timestamp(order["created_at"])
-        })
-
-    return render_template("user/dashboard.html", orders=formatted_orders)
+    # Default: 3-5 days from order
+    return (base + timedelta(days=4)).strftime("%d %b %Y")
 
 
 # =========================
@@ -130,7 +102,7 @@ def order_detail(order_id):
 
 
 # =========================
-# TRACK ORDER
+# TRACK ORDER (REAL HISTORY)
 # =========================
 @user_bp.route("/track/<int:order_id>")
 def track_order(order_id):
@@ -149,65 +121,50 @@ def track_order(order_id):
         conn.close()
         return "Order not found", 404
 
-    items = conn.execute("""
-        SELECT product_name, quantity, price
-        FROM order_items
+    # Fetch real history
+    history = conn.execute("""
+        SELECT status, message, created_at
+        FROM order_status_history
         WHERE order_id = ?
+        ORDER BY created_at ASC
     """, (order_id,)).fetchall()
 
     conn.close()
 
     order_data = dict(order)
     order_data["created_at"] = format_timestamp(order["created_at"])
-    order_data["estimated_delivery"] = calculate_estimated_delivery(order["created_at"])
+    order_data["estimated_delivery"] = calculate_estimated_delivery(
+        order["created_at"],
+        order["order_status"]
+    )
 
-    # ---------- Timeline ----------
+    # Build timeline from history table
     timeline = []
 
-    timeline.append({
-        "status": "Order Placed",
-        "message": "Your order has been placed successfully.",
-        "time": order_data["created_at"]
-    })
-
-    if order["order_status"] in ["CONFIRMED", "SHIPPED", "DELIVERED"]:
+    for row in history:
         timeline.append({
-            "status": "Order Confirmed",
-            "message": "Your order has been confirmed.",
-            "time": order_data["created_at"]
+            "status": row["status"],
+            "message": row["message"],
+            "time": format_timestamp(row["created_at"])
         })
 
-    if order["order_status"] in ["SHIPPED", "DELIVERED"]:
+    # If no history exists (safety fallback)
+    if not timeline:
         timeline.append({
-            "status": "Order Shipped",
-            "message": "Your package is on the way.",
+            "status": order["order_status"],
+            "message": "Order status updated.",
             "time": order_data["created_at"]
         })
-
-    if order["order_status"] == "DELIVERED":
-        timeline.append({
-            "status": "Delivered",
-            "message": "Package delivered successfully.",
-            "time": order_data["created_at"]
-        })
-
-    if order["order_status"] == "CANCELLED":
-        timeline = [{
-            "status": "Cancelled",
-            "message": "This order was cancelled.",
-            "time": order_data["created_at"]
-        }]
 
     return render_template(
         "user/track_order.html",
         order=order_data,
-        items=items,
         timeline=timeline
     )
 
 
 # =========================
-# CANCEL ORDER
+# CANCEL ORDER (WITH HISTORY)
 # =========================
 @user_bp.route("/cancel-order/<int:order_id>", methods=["POST"])
 def cancel_order(order_id):
@@ -230,6 +187,7 @@ def cancel_order(order_id):
         conn.close()
         return redirect(url_for("user.my_orders"))
 
+    # Restore stock
     items = conn.execute("""
         SELECT product_id, quantity
         FROM order_items
@@ -243,11 +201,24 @@ def cancel_order(order_id):
             WHERE id = ?
         """, (item["quantity"], item["product_id"]))
 
+    # Update order
     conn.execute("""
         UPDATE orders
         SET order_status = 'CANCELLED'
         WHERE id = ?
     """, (order_id,))
+
+    # Insert history record
+    conn.execute("""
+        INSERT INTO order_status_history
+        (order_id, status, message, created_at)
+        VALUES (?, ?, ?, ?)
+    """, (
+        order_id,
+        "CANCELLED",
+        "Order cancelled by customer.",
+        int(datetime.now().timestamp())
+    ))
 
     conn.commit()
     conn.close()
