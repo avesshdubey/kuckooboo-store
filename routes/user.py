@@ -11,21 +11,30 @@ user_bp = Blueprint("user", __name__, url_prefix="/user")
 def format_timestamp(ts):
     if not ts:
         return ""
-    return datetime.fromtimestamp(ts).strftime("%d %b %Y, %I:%M %p")
+    return datetime.fromtimestamp(int(ts)).strftime("%d %b %Y, %I:%M %p")
 
 
 def calculate_estimated_delivery(created_ts, status):
     if not created_ts:
         return None
 
-    base = datetime.fromtimestamp(created_ts)
+    base = datetime.fromtimestamp(int(created_ts))
 
-    # If shipped, add 3 days from shipped time
     if status == "SHIPPED":
         return (base + timedelta(days=3)).strftime("%d %b %Y")
 
-    # Default: 3-5 days from order
     return (base + timedelta(days=4)).strftime("%d %b %Y")
+
+
+# =========================
+# USER DASHBOARD (FIX FOR NAVBAR)
+# =========================
+@user_bp.route("/dashboard")
+def dashboard():
+    if not session.get("user_id"):
+        return redirect(url_for("auth.login"))
+
+    return redirect(url_for("user.my_orders"))
 
 
 # =========================
@@ -121,7 +130,6 @@ def track_order(order_id):
         conn.close()
         return "Order not found", 404
 
-    # Fetch real history
     history = conn.execute("""
         SELECT status, message, created_at
         FROM order_status_history
@@ -138,7 +146,6 @@ def track_order(order_id):
         order["order_status"]
     )
 
-    # Build timeline from history table
     timeline = []
 
     for row in history:
@@ -148,7 +155,6 @@ def track_order(order_id):
             "time": format_timestamp(row["created_at"])
         })
 
-    # If no history exists (safety fallback)
     if not timeline:
         timeline.append({
             "status": order["order_status"],
@@ -187,7 +193,6 @@ def cancel_order(order_id):
         conn.close()
         return redirect(url_for("user.my_orders"))
 
-    # Restore stock
     items = conn.execute("""
         SELECT product_id, quantity
         FROM order_items
@@ -201,14 +206,12 @@ def cancel_order(order_id):
             WHERE id = ?
         """, (item["quantity"], item["product_id"]))
 
-    # Update order
     conn.execute("""
         UPDATE orders
         SET order_status = 'CANCELLED'
         WHERE id = ?
     """, (order_id,))
 
-    # Insert history record
     conn.execute("""
         INSERT INTO order_status_history
         (order_id, status, message, created_at)
