@@ -19,62 +19,47 @@
                 <span class="badge-new">NEW</span>
             {% endif %}
 
-            <div class="media-gallery">
+            <div class="media-slider">
 
-                <!-- MAIN PREVIEW -->
-                <div class="main-preview" id="mainPreview">
+                <div class="slider-wrapper" id="sliderWrapper">
 
                     {% if media and media|length > 0 %}
 
-                        {% set first = media[0] %}
+                        {% for item in media %}
 
-                        {% if first.media_type == "image" %}
-                            <img id="mainMedia"
-                                 src="{{ first.media_url }}"
-                                 alt="{{ product.name }}"
-                                 class="main-media">
-                        {% elif first.media_type == "video" %}
-                            <video id="mainMedia"
-                                   class="main-media"
-                                   controls>
-                                <source src="{{ first.media_url }}">
-                            </video>
-                        {% endif %}
+                            {% if item.media_type == "image" %}
+                                <div class="slide">
+                                    <img src="{{ item.media_url }}"
+                                         alt="{{ product.name }}"
+                                         class="slide-media">
+                                </div>
+                            {% elif item.media_type == "video" %}
+                                <div class="slide">
+                                    <video class="slide-media"
+                                           autoplay muted loop playsinline>
+                                        <source src="{{ item.media_url }}">
+                                    </video>
+                                </div>
+                            {% endif %}
 
-                    {% elif product.image %}
-                        <!-- fallback for old products -->
-                        <img id="mainMedia"
-                             src="{{ product.image }}"
-                             alt="{{ product.name }}"
-                             class="main-media">
+                        {% endfor %}
+
                     {% else %}
-                        <p>No media available</p>
+                        <div class="slide">
+                            <div class="no-image">
+                                No media available
+                            </div>
+                        </div>
                     {% endif %}
 
                 </div>
 
-                <!-- THUMBNAILS -->
                 {% if media and media|length > 1 %}
-                <div class="thumbnail-row">
+                    <button class="slider-btn left"
+                            onclick="moveSlide(-1)">‹</button>
 
-                    {% for item in media %}
-
-                        {% if item.media_type == "image" %}
-                            <img
-                                src="{{ item.media_url }}"
-                                class="thumb"
-                                onclick="changeMedia('{{ item.media_url }}', 'image')">
-                        {% elif item.media_type == "video" %}
-                            <video
-                                class="thumb"
-                                onclick="changeMedia('{{ item.media_url }}', 'video')">
-                                <source src="{{ item.media_url }}">
-                            </video>
-                        {% endif %}
-
-                    {% endfor %}
-
-                </div>
+                    <button class="slider-btn right"
+                            onclick="moveSlide(1)">›</button>
                 {% endif %}
 
             </div>
@@ -95,7 +80,6 @@
                 ₹ {{ product.price }}
             </p>
 
-            <!-- ⭐ Rating -->
             <div class="rating-summary">
                 <strong>⭐ {{ avg_rating }} / 5</strong>
                 <span>({{ total_reviews }} reviews)</span>
@@ -111,45 +95,13 @@
                 </p>
             {% endif %}
 
-            <!-- ADD TO CART -->
-            {% if session.get("user_id") %}
-                {% if product.stock > 0 %}
-                    <form method="POST"
-                          action="{{ url_for('cart.add_to_cart', product_id=product.id) }}">
-                        <button type="submit" class="btn-primary">
-                            Add to Cart
-                        </button>
-                    </form>
-                {% else %}
-                    <button disabled class="btn-disabled">
-                        Out of Stock
+            {% if session.get("user_id") and product.stock > 0 %}
+                <form method="POST"
+                      action="{{ url_for('cart.add_to_cart', product_id=product.id) }}">
+                    <button type="submit" class="btn-primary">
+                        Add to Cart
                     </button>
-                {% endif %}
-            {% else %}
-                <p class="login-message">
-                    <a href="{{ url_for('auth.login') }}">Login</a> to purchase
-                </p>
-            {% endif %}
-
-            <!-- ADMIN CONTROLS -->
-            {% if session.get("is_admin") %}
-                <div class="admin-panel">
-                    <strong>Admin Controls</strong>
-
-                    <div class="admin-actions">
-                        <a href="{{ url_for('admin.edit_product', product_id=product.id) }}">
-                            Edit Product
-                        </a>
-
-                        <form method="POST"
-                              action="{{ url_for('admin.delete_product', product_id=product.id) }}"
-                              onsubmit="return confirm('Delete this product permanently?');">
-                            <button type="submit" class="btn-delete">
-                                Delete
-                            </button>
-                        </form>
-                    </div>
-                </div>
+                </form>
             {% endif %}
 
         </div>
@@ -163,18 +115,19 @@
 
 {% block extra_js %}
 <script>
-function changeMedia(src, type) {
-    const container = document.getElementById("mainPreview");
+let currentIndex = 0;
 
-    if (type === "image") {
-        container.innerHTML =
-            `<img src="${src}" class="main-media">`;
-    } else {
-        container.innerHTML =
-            `<video class="main-media" controls autoplay>
-                <source src="${src}">
-             </video>`;
-    }
+function moveSlide(direction) {
+    const wrapper = document.getElementById("sliderWrapper");
+    const slides = document.querySelectorAll(".slide");
+    const total = slides.length;
+
+    currentIndex += direction;
+
+    if (currentIndex < 0) currentIndex = total - 1;
+    if (currentIndex >= total) currentIndex = 0;
+
+    wrapper.style.transform = `translateX(-${currentIndex * 100}%)`;
 }
 </script>
 {% endblock %}

@@ -29,30 +29,42 @@ def home():
 
     conn = get_db_connection()
 
-    query = "SELECT * FROM products WHERE 1=1"
-    count_query = "SELECT COUNT(*) as count FROM products WHERE 1=1"
+    base_query = """
+        FROM products p
+        WHERE 1=1
+    """
+
     params = []
 
     if search_query:
-        query += " AND name LIKE ?"
-        count_query += " AND name LIKE ?"
+        base_query += " AND p.name LIKE %s"
         params.append(f"%{search_query}%")
 
     if category:
-        query += " AND category = ?"
-        count_query += " AND category = ?"
+        base_query += " AND p.category = %s"
         params.append(category)
 
     if sort == "price_low":
-        order_by = " ORDER BY price ASC"
+        order_by = " ORDER BY p.price ASC"
     elif sort == "price_high":
-        order_by = " ORDER BY price DESC"
+        order_by = " ORDER BY p.price DESC"
     else:
-        order_by = " ORDER BY id DESC"
+        order_by = " ORDER BY p.id DESC"
 
-    total_products = conn.execute(count_query, params).fetchone()["count"]
+    count_query = "SELECT COUNT(*) " + base_query
+    total_products = conn.execute(count_query, params).fetchone()[0]
 
-    query += order_by + " LIMIT ? OFFSET ?"
+    query = """
+        SELECT p.*,
+        (
+            SELECT pm.media_url
+            FROM product_media pm
+            WHERE pm.product_id = p.id
+            ORDER BY pm.id ASC
+            LIMIT 1
+        ) AS preview_image
+    """ + base_query + order_by + " LIMIT %s OFFSET %s"
+
     products = conn.execute(query, params + [per_page, offset]).fetchall()
 
     categories = conn.execute(
