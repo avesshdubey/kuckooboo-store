@@ -18,6 +18,7 @@
         </a>
     </div>
 </section>
+
 <div class="coupon-banner">
     🎉 Use code <strong>WELCOME10</strong> and get 10% OFF!
 </div>
@@ -27,6 +28,51 @@
 
     <div class="section-header">
         <h2>Our Products</h2>
+    </div>
+
+    <!-- =========================
+         FILTER BAR
+    ========================== -->
+    <div class="filter-bar">
+        <form method="GET" action="{{ url_for('shop.home') }}">
+
+            <!-- Search -->
+            <input
+                type="text"
+                name="search"
+                placeholder="Search..."
+                value="{{ search_query }}"
+            >
+
+            <!-- Category -->
+            <select name="category">
+                <option value="">All Categories</option>
+                {% for cat in categories %}
+                    <option value="{{ cat.category }}"
+                        {% if selected_category == cat.category %}selected{% endif %}>
+                        {{ cat.category }}
+                    </option>
+                {% endfor %}
+            </select>
+
+            <!-- Sort -->
+            <select name="sort">
+                <option value="">Newest</option>
+                <option value="price_low"
+                    {% if sort == "price_low" %}selected{% endif %}>
+                    Price: Low to High
+                </option>
+                <option value="price_high"
+                    {% if sort == "price_high" %}selected{% endif %}>
+                    Price: High to Low
+                </option>
+            </select>
+
+            <button type="submit" class="btn-filter">
+                Apply
+            </button>
+
+        </form>
     </div>
 
     {% if products %}
@@ -98,6 +144,37 @@
         {% endfor %}
 
     </div>
+
+    <!-- =========================
+         PAGINATION
+    ========================== -->
+    {% if total_pages > 1 %}
+    <div class="pagination">
+
+        {% if page > 1 %}
+            <a href="{{ url_for('shop.home',
+                page=page-1,
+                search=search_query,
+                category=selected_category,
+                sort=sort) }}">
+                ← Previous
+            </a>
+        {% endif %}
+
+        <span>Page {{ page }} of {{ total_pages }}</span>
+
+        {% if page < total_pages %}
+            <a href="{{ url_for('shop.home',
+                page=page+1,
+                search=search_query,
+                category=selected_category,
+                sort=sort) }}">
+                Next →
+            </a>
+        {% endif %}
+
+    </div>
+    {% endif %}
 
     {% else %}
         <div class="empty-state">
