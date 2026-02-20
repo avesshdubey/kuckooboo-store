@@ -59,10 +59,59 @@ def view_orders():
             "payment_method": o["payment_method"],
             "payment_status": o["payment_status"],
             "order_status": o["order_status"],
-            "created_at": datetime.fromtimestamp(int(o["created_at"])).strftime("%d %b %Y, %I:%M %p")
+            "created_at": datetime.fromtimestamp(
+                int(o["created_at"])
+            ).strftime("%d %b %Y, %I:%M %p")
         })
 
     return render_template("admin/orders.html", orders=formatted_orders)
+
+
+# =========================
+# ADMIN ORDER DETAIL (FIXED JOIN)
+# =========================
+@admin_bp.route("/orders/<int:order_id>")
+def order_detail(order_id):
+    if not admin_required():
+        return redirect(url_for("auth.login"))
+
+    conn = get_db_connection()
+
+    order = conn.execute("""
+        SELECT
+            orders.*,
+            users.email AS customer_email,
+            users.name AS customer_name
+        FROM orders
+        JOIN users ON orders.user_id = users.id
+        WHERE orders.id = ?
+    """, (order_id,)).fetchone()
+
+    if not order:
+        conn.close()
+        return redirect(url_for("admin.view_orders"))
+
+    items = conn.execute("""
+        SELECT *
+        FROM order_items
+        WHERE order_id = ?
+    """, (order_id,)).fetchall()
+
+    status_history = conn.execute("""
+        SELECT *
+        FROM order_status_history
+        WHERE order_id = ?
+        ORDER BY created_at DESC
+    """, (order_id,)).fetchall()
+
+    conn.close()
+
+    return render_template(
+        "admin/order_detail.html",
+        order=order,
+        items=items,
+        status_history=status_history
+    )
 
 
 # =========================
