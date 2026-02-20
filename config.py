@@ -23,11 +23,9 @@ class Config:
                 1
             )
 
-        # Railway / Production (PostgreSQL)
         DATABASE_URI = DATABASE_URL
         DB_TYPE = "postgres"
     else:
-        # Local Development (SQLite)
         DATABASE_URI = os.path.join(BASE_DIR, "database", "store.db")
         DB_TYPE = "sqlite"
 
@@ -39,6 +37,7 @@ class Config:
     MAIL_USE_SSL = True
     MAIL_USERNAME = os.environ.get("MAIL_USERNAME")
     MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD")
+    ADMIN_EMAIL = os.environ.get("ADMIN_EMAIL")
 
     # ==========================
     # Razorpay Configuration

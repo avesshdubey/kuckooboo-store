@@ -8,7 +8,6 @@ from config import Config
 
 logger = logging.getLogger("email_logger")
 
-# Ensure logger has handler (prevents silent logging failure)
 if not logger.handlers:
     logger.setLevel(logging.INFO)
     handler = logging.StreamHandler()
@@ -25,14 +24,8 @@ def send_email(to_email, subject, body, is_html=False):
     Will not crash app if SMTP fails.
     """
 
-    # Skip if credentials missing (prevents NoneType login error)
     if not Config.MAIL_USERNAME or not Config.MAIL_PASSWORD:
         logger.warning("Email skipped: MAIL credentials not configured.")
-        return
-
-    # Optional Railway protection
-    if os.environ.get("RAILWAY_ENVIRONMENT"):
-        logger.info("Email sending skipped (Railway environment).")
         return
 
     try:
@@ -54,12 +47,11 @@ def send_email(to_email, subject, body, is_html=False):
 
     except Exception as e:
         logger.error(f"Email sending failed: {str(e)}")
-        # Do NOT raise → prevents webhook/payment crash
         return
 
 
 def send_reset_email(to_email, reset_link):
-    subject = "Password Reset - Kuckoo"
+    subject = "Password Reset - Kuckoo Boo & mama!"
     body = f"""
 Hello,
 
@@ -68,5 +60,8 @@ Click the link below to reset your password:
 {reset_link}
 
 This link expires in 10 minutes.
+
+Regards,
+Kuckoo Boo & mama!
 """
     send_email(to_email, subject, body)
