@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, session, redirect, url_for
+from flask import Blueprint, render_template, session, redirect, url_for, request
 from database.db import get_db_connection
 
 cart_bp = Blueprint("cart", __name__, url_prefix="/cart")
@@ -50,17 +50,69 @@ def add_to_cart(product_id):
 # =========================
 @cart_bp.route("/")
 def view_cart():
+
     cart = session.get("cart", {})
-    total = sum(
-        item["price"] * item["quantity"]
-        for item in cart.values()
-    )
+    subtotal = sum(item["price"] * item["quantity"] for item in cart.values())
+
+    discount = 0
+    coupon = session.get("coupon")
+
+    if coupon:
+        discount = subtotal * (coupon["discount_percent"] / 100)
+
+    total = subtotal - discount
 
     return render_template(
         "cart/view_cart.html",
         cart=cart,
-        total=total
+        subtotal=subtotal,
+        discount=discount,
+        total=total,
+        applied_coupon=coupon
     )
+
+
+# =========================
+# APPLY COUPON
+# =========================
+@cart_bp.route("/apply-coupon", methods=["POST"])
+def apply_coupon():
+
+    code = request.form.get("coupon_code", "").strip()
+
+    if not code:
+        return redirect(url_for("cart.view_cart"))
+
+    conn = get_db_connection()
+
+    coupon = conn.execute(
+        "SELECT * FROM coupons WHERE code = ? AND active = 1",
+        (code,)
+    ).fetchone()
+
+    conn.close()
+
+    if coupon:
+        session["coupon"] = {
+            "code": coupon["code"],
+            "discount_percent": coupon["discount_percent"]
+        }
+        session["coupon_message"] = "Coupon applied successfully!"
+    else:
+        session.pop("coupon", None)
+        session["coupon_message"] = "Invalid or expired coupon."
+
+    return redirect(url_for("cart.view_cart"))
+
+
+# =========================
+# REMOVE COUPON
+# =========================
+@cart_bp.route("/remove-coupon")
+def remove_coupon():
+    session.pop("coupon", None)
+    session["coupon_message"] = "Coupon removed."
+    return redirect(url_for("cart.view_cart"))
 
 
 # =========================
@@ -84,12 +136,7 @@ def increase_quantity(product_id):
 
     conn.close()
 
-    if not product:
-        return redirect(url_for("cart.view_cart"))
-
-    stock = product["stock"]
-
-    if cart[pid]["quantity"] + 1 > stock:
+    if cart[pid]["quantity"] + 1 > product["stock"]:
         session["cart_error"] = "Stock limit reached"
         return redirect(url_for("cart.view_cart"))
 
@@ -110,7 +157,6 @@ def decrease_quantity(product_id):
 
     if pid in cart:
         cart[pid]["quantity"] -= 1
-
         if cart[pid]["quantity"] <= 0:
             cart.pop(pid)
 

@@ -9,71 +9,79 @@
 
 <section class="cart-section">
 
-    <div class="cart-header">
-        <h1>Your Cart</h1>
-    </div>
+    <h1>Your Cart</h1>
 
     {% if session.get("cart_error") %}
         <p class="error">{{ session.pop("cart_error") }}</p>
     {% endif %}
 
+    {% if session.get("coupon_message") %}
+        <p class="coupon-msg">{{ session.pop("coupon_message") }}</p>
+    {% endif %}
+
     {% if cart %}
 
-    <div class="table-wrapper">
-        <table class="cart-table">
+    <table class="cart-table">
+        <thead>
+            <tr>
+                <th>Product</th>
+                <th>Price</th>
+                <th>Qty</th>
+                <th>Total</th>
+                <th></th>
+            </tr>
+        </thead>
 
-            <thead>
-                <tr>
-                    <th>Product</th>
-                    <th>Price</th>
-                    <th>Qty</th>
-                    <th>Total</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
+        <tbody>
+            {% for product_id, item in cart.items() %}
+            <tr>
+                <td>{{ item.name }}</td>
+                <td>₹ {{ item.price }}</td>
+                <td>
+                    <a href="{{ url_for('cart.decrease_quantity', product_id=product_id) }}">−</a>
+                    {{ item.quantity }}
+                    <a href="{{ url_for('cart.increase_quantity', product_id=product_id) }}">+</a>
+                </td>
+                <td>₹ {{ item.price * item.quantity }}</td>
+                <td>
+                    <a href="{{ url_for('cart.remove_from_cart', product_id=product_id) }}">
+                        Remove
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 
-            <tbody>
-                {% for product_id, item in cart.items() %}
-                <tr>
+    <!-- COUPON SECTION -->
+    <div class="coupon-section">
 
-                    <td class="product-name">
-                        {{ item.name }}
-                    </td>
+        {% if applied_coupon %}
+            <p>
+                Applied Coupon:
+                <strong>{{ applied_coupon.code }}</strong>
+                ({{ applied_coupon.discount_percent }}% OFF)
+                <a href="{{ url_for('cart.remove_coupon') }}">Remove</a>
+            </p>
+        {% else %}
+            <form method="POST" action="{{ url_for('cart.apply_coupon') }}">
+                <input type="text" name="coupon_code" placeholder="Enter coupon code">
+                <button type="submit">Apply</button>
+            </form>
+        {% endif %}
 
-                    <td>₹ {{ item.price }}</td>
-
-                    <td>
-                        <div class="qty-control">
-                            <a href="{{ url_for('cart.decrease_quantity', product_id=product_id) }}" class="qty-btn">−</a>
-                            <span>{{ item.quantity }}</span>
-                            <a href="{{ url_for('cart.increase_quantity', product_id=product_id) }}" class="qty-btn">+</a>
-                        </div>
-                    </td>
-
-                    <td class="item-total">
-                        ₹ {{ item.price * item.quantity }}
-                    </td>
-
-                    <td>
-                        <a href="{{ url_for('cart.remove_from_cart', product_id=product_id) }}"
-                           class="remove-link">
-                            Remove
-                        </a>
-                    </td>
-
-                </tr>
-                {% endfor %}
-            </tbody>
-
-        </table>
     </div>
 
+    <!-- SUMMARY -->
     <div class="cart-summary">
 
-        <div class="cart-total">
-            <span>Total:</span>
-            <strong>₹ {{ total }}</strong>
-        </div>
+        <p>Subtotal: ₹ {{ subtotal }}</p>
+
+        {% if discount > 0 %}
+            <p>Discount: − ₹ {{ discount }}</p>
+        {% endif %}
+
+        <h3>Total: ₹ {{ total }}</h3>
 
         <a href="{{ url_for('checkout.checkout') }}" class="checkout-btn">
             Proceed to Checkout
@@ -82,20 +90,10 @@
     </div>
 
     {% else %}
-
-        <div class="empty-cart">
-            <p>Your cart is empty.</p>
-            <a href="{{ url_for('shop.home') }}" class="btn-primary">
-                Continue Shopping
-            </a>
-        </div>
-
+        <p>Your cart is empty.</p>
+        <a href="{{ url_for('shop.home') }}">Continue Shopping</a>
     {% endif %}
 
 </section>
 
-{% endblock %}
-
-{% block extra_js %}
-<script src="{{ url_for('static', filename='js/cart.js') }}"></script>
 {% endblock %}
