@@ -19,9 +19,18 @@
     </div>
 </section>
 
+{% if active_coupon %}
 <div class="coupon-banner">
-    🎉 Use code <strong>WELCOME10</strong> and get 10% OFF!
+    🎉 Use code 
+    <strong>{{ active_coupon.code }}</strong>
+    and get
+    {% if active_coupon.discount_type == "PERCENT" %}
+        {{ active_coupon.discount_value }}% OFF!
+    {% elif active_coupon.discount_type == "FLAT" %}
+        ₹ {{ active_coupon.discount_value }} OFF!
+    {% endif %}
 </div>
+{% endif %}
 
 <!-- PRODUCTS SECTION -->
 <section id="products" class="home-products">

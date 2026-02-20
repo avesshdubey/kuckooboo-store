@@ -23,11 +23,25 @@ def checkout():
 
     session["checkout_token"] = str(uuid.uuid4())
 
-    total = sum(item["price"] * item["quantity"] for item in cart.values())
+    subtotal = sum(item["price"] * item["quantity"] for item in cart.values())
+
+    # ✅ APPLY COUPON
+    discount = 0
+    coupon = session.get("coupon")
+
+    if coupon:
+        if coupon["discount_type"] == "PERCENT":
+            discount = subtotal * (coupon["discount_value"] / 100)
+        elif coupon["discount_type"] == "FLAT":
+            discount = coupon["discount_value"]
+
+    total = max(subtotal - discount, 0)
 
     return render_template(
         "checkout/checkout.html",
         cart=cart,
+        subtotal=subtotal,
+        discount=discount,
         total=total,
         checkout_token=session["checkout_token"]
     )
@@ -66,18 +80,30 @@ def place_order():
     for product_id, item in cart.items():
         product = conn.execute(
             "SELECT stock FROM products WHERE id = ?",
-            (product_id,)
+            (product_id,),
         ).fetchone()
 
         if not product or product["stock"] < item["quantity"]:
             conn.close()
             return "Insufficient stock", 400
 
-    total = sum(item["price"] * item["quantity"] for item in cart.values())
+    subtotal = sum(item["price"] * item["quantity"] for item in cart.values())
+
+    # ✅ APPLY COUPON AGAIN (IMPORTANT)
+    discount = 0
+    coupon = session.get("coupon")
+
+    if coupon:
+        if coupon["discount_type"] == "PERCENT":
+            discount = subtotal * (coupon["discount_value"] / 100)
+        elif coupon["discount_type"] == "FLAT":
+            discount = coupon["discount_value"]
+
+    total = max(subtotal - discount, 0)
 
     payment_status = "PAID" if payment_method == "COD" else "PENDING"
 
-       # =========================
+    # =========================
     # INSERT ORDER
     # =========================
     if "postgres" in conn.db_type:
@@ -137,7 +163,6 @@ def place_order():
 
         order_id = result.lastrowid
 
-
     # =========================
     # ORDER ITEMS + STOCK UPDATE
     # =========================
@@ -176,24 +201,22 @@ def place_order():
         subject, body = order_confirmation_email(
             full_name,
             order_id,
-            total
+            total,
         )
 
         send_email_async(
             user["email"],
             subject,
             body,
-            is_html=True
+            is_html=True,
         )
 
     conn.close()
 
     session.pop("cart", None)
     session.pop("checkout_token", None)
+    session.pop("coupon", None)  # ✅ clear coupon after order
 
-    # =========================
-    # PAYMENT FLOW
-    # =========================
     if payment_method == "RAZORPAY":
         return redirect(
             url_for("payment.razorpay_checkout", order_id=order_id)

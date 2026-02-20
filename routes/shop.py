@@ -47,12 +47,10 @@ def home():
     else:
         order_by = " ORDER BY p.id DESC "
 
-    # ✅ FIXED COUNT QUERY
     count_query = "SELECT COUNT(*) as count " + base_query
     count_row = conn.execute(count_query, params).fetchone()
     total_products = count_row["count"]
 
-    # ✅ PREVIEW IMAGE SUBQUERY
     query = """
         SELECT p.*,
         (
@@ -70,6 +68,19 @@ def home():
         "SELECT DISTINCT category FROM products ORDER BY category ASC"
     ).fetchall()
 
+    # =========================
+    # DYNAMIC ACTIVE COUPON
+    # =========================
+    active_coupon = conn.execute(
+        """
+        SELECT code, discount_type, discount_value
+        FROM coupons
+        WHERE is_active = 1
+        ORDER BY id DESC
+        LIMIT 1
+        """
+    ).fetchone()
+
     conn.close()
 
     total_pages = (total_products + per_page - 1) // per_page
@@ -82,7 +93,8 @@ def home():
         selected_category=category,
         sort=sort,
         page=page,
-        total_pages=total_pages
+        total_pages=total_pages,
+        active_coupon=active_coupon   # ✅ passed to template
     )
 
 
@@ -169,95 +181,6 @@ def product_detail(product_id):
 
 
 # =========================
-# ADD REVIEW
-# =========================
-@shop_bp.route("/product/<int:product_id>/add-review", methods=["POST"])
-def add_review(product_id):
-
-    if not session.get("user_id"):
-        return redirect(url_for("auth.login"))
-
-    user_id = session["user_id"]
-    conn = get_db_connection()
-
-    delivered_order = conn.execute(
-        """
-        SELECT oi.id
-        FROM order_items oi
-        JOIN orders o ON oi.order_id = o.id
-        WHERE oi.product_id = %s
-        AND o.user_id = %s
-        AND o.order_status = 'DELIVERED'
-        """,
-        (product_id, user_id)
-    ).fetchone()
-
-    if not delivered_order:
-        conn.close()
-        return "You can review only delivered products.", 403
-
-    rating = request.form.get("rating")
-    review_text = request.form.get("review_text", "").strip()
-    file = request.files.get("media")
-
-    media_filename = None
-    media_type = None
-
-    if file and file.filename:
-        ext = file.filename.rsplit(".", 1)[1].lower()
-
-        if allowed_file(file.filename, ALLOWED_IMAGE_EXTENSIONS):
-            media_type = "image"
-        elif allowed_file(file.filename, ALLOWED_VIDEO_EXTENSIONS):
-            media_type = "video"
-        else:
-            conn.close()
-            return "Invalid file type", 400
-
-        os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-        unique_name = f"{uuid.uuid4().hex}.{ext}"
-        file.save(os.path.join(UPLOAD_FOLDER, unique_name))
-        media_filename = unique_name
-
-    existing_review = conn.execute(
-        """
-        SELECT id FROM reviews
-        WHERE product_id = %s
-        AND user_id = %s
-        """,
-        (product_id, user_id)
-    ).fetchone()
-
-    if existing_review:
-        conn.execute(
-            """
-            UPDATE reviews
-            SET rating = %s,
-                review_text = %s,
-                media_file = %s,
-                media_type = %s
-            WHERE product_id = %s
-            AND user_id = %s
-            """,
-            (rating, review_text, media_filename, media_type, product_id, user_id)
-        )
-    else:
-        conn.execute(
-            """
-            INSERT INTO reviews
-            (product_id, user_id, rating, review_text, media_file, media_type)
-            VALUES (%s, %s, %s, %s, %s, %s)
-            """,
-            (product_id, user_id, rating, review_text, media_filename, media_type)
-        )
-
-    conn.commit()
-    conn.close()
-
-    return redirect(url_for("shop.product_detail", product_id=product_id))
-
-
-# =========================
 # STATIC PAGES
 # =========================
 @shop_bp.route("/about")
@@ -269,12 +192,12 @@ def about():
 def contact():
     return render_template("contact.html")
 
+
 # =========================
 # SEARCH
 # =========================
 @shop_bp.route("/search")
 def search():
-    from database.db import get_db_connection
 
     query = request.args.get("q", "").strip()
 
