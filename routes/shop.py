@@ -268,3 +268,38 @@ def about():
 @shop_bp.route("/contact")
 def contact():
     return render_template("contact.html")
+
+# =========================
+# SEARCH
+# =========================
+@shop_bp.route("/search")
+def search():
+
+    query_text = request.args.get("q", "").strip()
+
+    conn = get_db_connection()
+
+    products = conn.execute(
+        """
+        SELECT p.*,
+        (
+            SELECT pm.media_url
+            FROM product_media pm
+            WHERE pm.product_id = p.id
+            ORDER BY pm.id ASC
+            LIMIT 1
+        ) AS preview_image
+        FROM products p
+        WHERE p.name ILIKE %s
+        ORDER BY p.id DESC
+        """,
+        (f"%{query_text}%",)
+    ).fetchall()
+
+    conn.close()
+
+    return render_template(
+        "shop/search.html",
+        products=products,
+        query=query_text
+    )
