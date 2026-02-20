@@ -85,12 +85,12 @@ def apply_coupon():
 
     conn = get_db_connection()
 
-    # ✅ FIXED: use is_active + case-insensitive match
+    # ✅ FIXED FOR INTEGER COLUMN
     coupon = conn.execute(
         """
         SELECT * FROM coupons
         WHERE LOWER(code) = LOWER(?)
-          AND is_active = TRUE
+          AND is_active = 1
         """,
         (code,)
     ).fetchone()
