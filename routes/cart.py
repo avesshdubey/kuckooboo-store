@@ -58,9 +58,12 @@ def view_cart():
     coupon = session.get("coupon")
 
     if coupon:
-        discount = subtotal * (coupon["discount_percent"] / 100)
+        if coupon["discount_type"] == "PERCENT":
+            discount = subtotal * (coupon["discount_value"] / 100)
+        elif coupon["discount_type"] == "FLAT":
+            discount = coupon["discount_value"]
 
-    total = subtotal - discount
+    total = max(subtotal - discount, 0)
 
     return render_template(
         "cart/view_cart.html",
@@ -85,7 +88,6 @@ def apply_coupon():
 
     conn = get_db_connection()
 
-    # ✅ FIXED FOR INTEGER COLUMN
     coupon = conn.execute(
         """
         SELECT * FROM coupons
@@ -100,7 +102,8 @@ def apply_coupon():
     if coupon:
         session["coupon"] = {
             "code": coupon["code"],
-            "discount_percent": coupon["discount_percent"]
+            "discount_type": coupon["discount_type"],
+            "discount_value": coupon["discount_value"]
         }
         session["coupon_message"] = "Coupon applied successfully!"
     else:
