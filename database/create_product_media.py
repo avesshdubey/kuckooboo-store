@@ -15,15 +15,16 @@ def create_product_media_table():
         text_type = "TEXT"
 
     conn.execute(f"""
-        CREATE TABLE IF NOT EXISTS product_media (
-            id {pk},
-            product_id {int_type} NOT NULL,
-            media_url {text_type} NOT NULL,
-            media_type {text_type} NOT NULL,  -- image or video
-            created_at {int_type},
-            FOREIGN KEY (product_id) REFERENCES products(id)
+    CREATE TABLE IF NOT EXISTS product_media (
+        id {pk},
+        product_id {int_type} NOT NULL,
+        media_url {text_type} NOT NULL,
+        media_type {text_type} NOT NULL,
+        created_at {int_type},
+        FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
         )
     """)
+ 
 
     conn.commit()
     conn.close()
