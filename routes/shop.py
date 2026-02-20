@@ -274,32 +274,35 @@ def contact():
 # =========================
 @shop_bp.route("/search")
 def search():
+    from database.db import get_db_connection
 
-    query_text = request.args.get("q", "").strip()
+    query = request.args.get("q", "").strip()
 
     conn = get_db_connection()
 
-    products = conn.execute(
-        """
-        SELECT p.*,
-        (
-            SELECT pm.media_url
-            FROM product_media pm
-            WHERE pm.product_id = p.id
-            ORDER BY pm.id ASC
-            LIMIT 1
-        ) AS preview_image
-        FROM products p
-        WHERE p.name ILIKE %s
-        ORDER BY p.id DESC
-        """,
-        (f"%{query_text}%",)
-    ).fetchall()
+    if query:
+        search_term = f"%{query}%"
+
+        products = conn.execute("""
+            SELECT p.*,
+                   (
+                       SELECT pm.media_url
+                       FROM product_media pm
+                       WHERE pm.product_id = p.id
+                       LIMIT 1
+                   ) AS preview_image
+            FROM products p
+            WHERE p.name ILIKE %s
+               OR p.description ILIKE %s
+            ORDER BY p.created_at DESC
+        """, (search_term, search_term)).fetchall()
+    else:
+        products = []
 
     conn.close()
 
     return render_template(
         "shop/search.html",
         products=products,
-        query=query_text
+        query=query
     )
