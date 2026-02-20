@@ -29,31 +29,30 @@ def home():
 
     conn = get_db_connection()
 
-    base_query = """
-        FROM products p
-        WHERE 1=1
-    """
-
+    base_query = " FROM products p WHERE 1=1 "
     params = []
 
     if search_query:
-        base_query += " AND p.name LIKE %s"
+        base_query += " AND p.name ILIKE %s "
         params.append(f"%{search_query}%")
 
     if category:
-        base_query += " AND p.category = %s"
+        base_query += " AND p.category = %s "
         params.append(category)
 
     if sort == "price_low":
-        order_by = " ORDER BY p.price ASC"
+        order_by = " ORDER BY p.price ASC "
     elif sort == "price_high":
-        order_by = " ORDER BY p.price DESC"
+        order_by = " ORDER BY p.price DESC "
     else:
-        order_by = " ORDER BY p.id DESC"
+        order_by = " ORDER BY p.id DESC "
 
-    count_query = "SELECT COUNT(*) " + base_query
-    total_products = conn.execute(count_query, params).fetchone()[0]
+    # ✅ FIXED COUNT QUERY
+    count_query = "SELECT COUNT(*) as count " + base_query
+    count_row = conn.execute(count_query, params).fetchone()
+    total_products = count_row["count"]
 
+    # ✅ PREVIEW IMAGE SUBQUERY
     query = """
         SELECT p.*,
         (
@@ -63,7 +62,7 @@ def home():
             ORDER BY pm.id ASC
             LIMIT 1
         ) AS preview_image
-    """ + base_query + order_by + " LIMIT %s OFFSET %s"
+    """ + base_query + order_by + " LIMIT %s OFFSET %s "
 
     products = conn.execute(query, params + [per_page, offset]).fetchall()
 
@@ -95,9 +94,8 @@ def product_detail(product_id):
 
     conn = get_db_connection()
 
-    # ---- PRODUCT ----
     product = conn.execute(
-        "SELECT * FROM products WHERE id = ?",
+        "SELECT * FROM products WHERE id = %s",
         (product_id,)
     ).fetchone()
 
@@ -105,36 +103,33 @@ def product_detail(product_id):
         conn.close()
         return "Product not found", 404
 
-    # ---- PRODUCT MEDIA (NEW) ----
     media = conn.execute(
         """
         SELECT media_url, media_type
         FROM product_media
-        WHERE product_id = ?
+        WHERE product_id = %s
         ORDER BY id ASC
         """,
         (product_id,)
     ).fetchall()
 
-    # ---- REVIEWS ----
     reviews = conn.execute(
         """
         SELECT r.*, u.name as user_name
         FROM reviews r
         JOIN users u ON r.user_id = u.id
-        WHERE r.product_id = ?
+        WHERE r.product_id = %s
         ORDER BY r.id DESC
         """,
         (product_id,)
     ).fetchall()
 
-    # ---- AVG RATING ----
     avg_rating_data = conn.execute(
         """
         SELECT AVG(rating) as avg_rating,
                COUNT(*) as total
         FROM reviews
-        WHERE product_id = ?
+        WHERE product_id = %s
         """,
         (product_id,)
     ).fetchone()
@@ -147,8 +142,8 @@ def product_detail(product_id):
             SELECT oi.id
             FROM order_items oi
             JOIN orders o ON oi.order_id = o.id
-            WHERE oi.product_id = ?
-            AND o.user_id = ?
+            WHERE oi.product_id = %s
+            AND o.user_id = %s
             AND o.order_status = 'DELIVERED'
             """,
             (product_id, session["user_id"])
@@ -165,13 +160,12 @@ def product_detail(product_id):
     return render_template(
         "shop/product_detail.html",
         product=product,
-        media=media,                     # ✅ IMPORTANT FIX
+        media=media,
         reviews=reviews,
         avg_rating=avg_rating,
         total_reviews=total_reviews,
         can_review=can_review
     )
-
 
 
 # =========================
@@ -184,7 +178,6 @@ def add_review(product_id):
         return redirect(url_for("auth.login"))
 
     user_id = session["user_id"]
-
     conn = get_db_connection()
 
     delivered_order = conn.execute(
@@ -192,8 +185,8 @@ def add_review(product_id):
         SELECT oi.id
         FROM order_items oi
         JOIN orders o ON oi.order_id = o.id
-        WHERE oi.product_id = ?
-        AND o.user_id = ?
+        WHERE oi.product_id = %s
+        AND o.user_id = %s
         AND o.order_status = 'DELIVERED'
         """,
         (product_id, user_id)
@@ -229,8 +222,8 @@ def add_review(product_id):
     existing_review = conn.execute(
         """
         SELECT id FROM reviews
-        WHERE product_id = ?
-        AND user_id = ?
+        WHERE product_id = %s
+        AND user_id = %s
         """,
         (product_id, user_id)
     ).fetchone()
@@ -239,12 +232,12 @@ def add_review(product_id):
         conn.execute(
             """
             UPDATE reviews
-            SET rating = ?,
-                review_text = ?,
-                media_file = ?,
-                media_type = ?
-            WHERE product_id = ?
-            AND user_id = ?
+            SET rating = %s,
+                review_text = %s,
+                media_file = %s,
+                media_type = %s
+            WHERE product_id = %s
+            AND user_id = %s
             """,
             (rating, review_text, media_filename, media_type, product_id, user_id)
         )
@@ -253,7 +246,7 @@ def add_review(product_id):
             """
             INSERT INTO reviews
             (product_id, user_id, rating, review_text, media_file, media_type)
-            VALUES (?, ?, ?, ?, ?, ?)
+            VALUES (%s, %s, %s, %s, %s, %s)
             """,
             (product_id, user_id, rating, review_text, media_filename, media_type)
         )
@@ -262,38 +255,6 @@ def add_review(product_id):
     conn.close()
 
     return redirect(url_for("shop.product_detail", product_id=product_id))
-
-
-# =========================
-# SEARCH
-# =========================
-@shop_bp.route("/search")
-def search():
-
-    query_text = request.args.get("q", "").strip()
-    products = []
-
-    if query_text:
-        conn = get_db_connection()
-
-        products = conn.execute(
-            """
-            SELECT id, name, price, description,
-                   stock, image, is_new, category
-            FROM products
-            WHERE name LIKE ?
-            ORDER BY id DESC
-            """,
-            (f"%{query_text}%",)
-        ).fetchall()
-
-        conn.close()
-
-    return render_template(
-        "shop/search.html",
-        products=products,
-        query=query_text
-    )
 
 
 # =========================
