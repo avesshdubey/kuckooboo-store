@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -29,11 +30,16 @@
             </a>
         </div>
 
-        <nav class="nav-links">
+        <!-- Mobile Menu Button -->
+        <button class="menu-toggle" id="menuToggle">
+            ☰
+        </button>
+
+        <nav class="nav-links" id="navLinks">
+
             <a href="{{ url_for('shop.home') }}">Home</a>
             <a href="{{ url_for('shop.about') }}">About</a>
             <a href="{{ url_for('shop.contact') }}">Contact</a>
-
 
             {% if session.get("user_id") %}
                 <a href="{{ url_for('cart.view_cart') }}">Cart</a>
@@ -59,8 +65,9 @@
                     placeholder="Search products"
                     value="{{ request.args.get('q', '') }}"
                 >
-                <button type="submit">Search</button>
+                <button type="submit">🔍</button>
             </form>
+
         </nav>
 
     </div>

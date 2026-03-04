@@ -7,6 +7,8 @@
     --radius: 20px;
 }
 
+/* RESET */
+
 * {
     margin: 0;
     padding: 0;
@@ -17,7 +19,10 @@ body {
     font-family: 'Nunito', sans-serif;
     background: linear-gradient(to right, #fdf7f9, #eef7f6);
     color: var(--text-dark);
+    line-height: 1.6;
 }
+
+/* CONTAINER */
 
 .container {
     width: 90%;
@@ -26,8 +31,11 @@ body {
 }
 
 /* HEADER */
+
 .header {
-    padding: none;
+    background: white;
+    padding: 12px 0;
+    border-bottom: 1px solid #eee;
 }
 
 .nav {
@@ -35,6 +43,8 @@ body {
     justify-content: space-between;
     align-items: center;
 }
+
+/* BRAND */
 
 .brand-link {
     display: flex;
@@ -45,7 +55,7 @@ body {
 .brand-logo {
     border-radius: 2rem;
     height: 50px;
-    margin-right: none;
+    margin-right: 10px;
 }
 
 .brand-name {
@@ -55,16 +65,18 @@ body {
 }
 
 /* NAV LINKS */
+
 .nav-links {
     display: flex;
     align-items: center;
-    gap: 15px;
+    gap: 16px;
 }
 
 .nav-links a {
     text-decoration: none;
     font-weight: 600;
     color: var(--text-dark);
+    transition: .2s;
 }
 
 .nav-links a:hover {
@@ -72,27 +84,41 @@ body {
 }
 
 /* SEARCH */
+
 .search-form {
     display: flex;
+    align-items: center;
     gap: 5px;
 }
 
 .search-form input {
-    padding: 8px 12px;
+    padding: 8px 14px;
     border-radius: 20px;
     border: none;
     background: #e8f2f1;
 }
 
 .search-form button {
-    padding: 8px 12px;
+    padding: 8px 14px;
     border-radius: 20px;
     border: none;
     background: var(--primary);
     cursor: pointer;
+    transition: .2s;
+}
+
+.search-form button:hover {
+    background: var(--primary-dark);
+}
+
+/* MAIN */
+
+.main-content {
+    margin-top: 40px;
 }
 
 /* FOOTER */
+
 .footer {
     margin-top: 80px;
     background: #f2f6f5;
@@ -115,6 +141,48 @@ body {
     font-size: 14px;
 }
 
-.main-content {
-    margin-top: 40px;
+.copyright {
+    text-align: center;
+    font-size: 14px;
+    color: var(--text-light);
+}
+
+/* MOBILE MENU BUTTON */
+
+.menu-toggle {
+    display: none;
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 900px) {
+
+    .nav {
+        flex-wrap: wrap;
+    }
+
+    .menu-toggle {
+        display: block;
+    }
+
+    .nav-links {
+        width: 100%;
+        flex-direction: column;
+        align-items: flex-start;
+        display: none;
+        margin-top: 15px;
+    }
+
+    .nav-links.active {
+        display: flex;
+    }
+
+    .search-form {
+        width: 100%;
+    }
+
 }
