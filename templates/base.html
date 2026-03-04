@@ -48,6 +48,7 @@ class="brand-logo">
 
 {% if session.get("is_admin") %}
 <a class="nav-btn" href="{{ url_for('admin.dashboard') }}">Admin</a>
+<a class="nav-btn" href="{{ url_for('admin.list_products') }}">Products</a>
 <a class="nav-btn" href="{{ url_for('admin.add_product') }}">Add Product</a>
 <a class="nav-btn" href="{{ url_for('admin.view_orders') }}">Orders</a>
 {% endif %}

@@ -163,20 +163,13 @@ def edit_product(product_id):
         return "Product not found", 404
 
     if request.method == "POST":
+
         name = request.form["name"]
         price = float(request.form["price"])
         stock = int(request.form["stock"])
         description = request.form["description"]
         is_new = 1 if request.form.get("is_new") else 0
         category = request.form.get("category", "General")
-
-        image_file = request.files.get("image")
-        image_url = product["image"]
-
-        # If new image uploaded → replace in Cloudinary
-        if image_file and image_file.filename:
-            upload_result = cloudinary.uploader.upload(image_file)
-            image_url = upload_result["secure_url"]
 
         conn.execute(
             """
@@ -185,14 +178,57 @@ def edit_product(product_id):
                 price = ?,
                 stock = ?,
                 description = ?,
-                image = ?,
                 is_new = ?,
                 category = ?
             WHERE id = ?
             """,
-            (name, price, stock, description,
-             image_url, is_new, category, product_id)
+            (name, price, stock, description, is_new, category, product_id)
         )
+
+        # Handle new images
+        images = request.files.getlist("images")
+
+        for image in images:
+            if image and image.filename:
+                upload_result = cloudinary.uploader.upload(image)
+
+                conn.execute(
+                    """
+                    INSERT INTO product_media
+                    (product_id, media_url, media_type, created_at)
+                    VALUES (?, ?, ?, ?)
+                    """,
+                    (
+                        product_id,
+                        upload_result["secure_url"],
+                        "image",
+                        int(time.time())
+                    )
+                )
+
+        # Handle video
+        video = request.files.get("video")
+
+        if video and video.filename:
+
+            upload_result = cloudinary.uploader.upload(
+                video,
+                resource_type="video"
+            )
+
+            conn.execute(
+                """
+                INSERT INTO product_media
+                (product_id, media_url, media_type, created_at)
+                VALUES (?, ?, ?, ?)
+                """,
+                (
+                    product_id,
+                    upload_result["secure_url"],
+                    "video",
+                    int(time.time())
+                )
+            )
 
         conn.commit()
         conn.close()
@@ -201,8 +237,6 @@ def edit_product(product_id):
 
     conn.close()
     return render_template("admin/edit_product.html", product=product)
-
-
 # =========================
 # DELETE PRODUCT
 # =========================
