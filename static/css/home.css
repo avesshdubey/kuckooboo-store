@@ -341,3 +341,157 @@
     border-radius: 12px;
     margin: 20px 0;
 }
+
+/* ===========================
+   OFFER MOVING BAR
+=========================== */
+
+.offer-bar {
+    background: var(--primary);
+    color: white;
+    overflow: hidden;
+    padding: 10px 0;
+    font-weight: 600;
+}
+
+.offer-track {
+    white-space: nowrap;
+    display: inline-block;
+    padding-left: 100%;
+    animation: scrollOffer 18s linear infinite;
+}
+
+@keyframes scrollOffer {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-100%); }
+}
+
+
+/* ===========================
+   HERO SECTION
+=========================== */
+
+.hero {
+
+    margin-top: 20px;
+    border-radius: var(--radius);
+
+    background:
+        linear-gradient(rgba(255,255,255,.85), rgba(255,255,255,.85)),
+        url("/static/images/banner.jpg");
+
+    background-size: cover;
+    background-position: center;
+
+    padding: 80px 40px;
+    text-align: center;
+}
+
+.hero h1 {
+    font-size: 36px;
+    margin-bottom: 15px;
+}
+
+.hero p {
+    color: var(--text-light);
+    margin-bottom: 25px;
+}
+
+
+/* ===========================
+   BUTTON SYSTEM
+=========================== */
+
+.btn-primary {
+
+    display: inline-block;
+    padding: 12px 26px;
+
+    background: var(--primary);
+    color: white;
+
+    border-radius: 30px;
+    text-decoration: none;
+
+    font-weight: 700;
+
+    transition: .25s;
+}
+
+.btn-primary:hover {
+    background: var(--primary-dark);
+    transform: translateY(-2px);
+}
+
+
+.btn-secondary {
+
+    display: inline-block;
+    padding: 10px 22px;
+
+    border-radius: 25px;
+    border: 2px solid var(--primary);
+
+    text-decoration: none;
+    color: var(--primary-dark);
+
+    font-weight: 600;
+}
+
+.btn-secondary:hover {
+    background: var(--primary);
+    color: white;
+}
+
+
+/* ===========================
+   PRODUCT GRID IMPROVEMENT
+=========================== */
+
+.product-grid {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(auto-fit, minmax(260px, 1fr));
+
+    gap: 28px;
+
+    margin-top: 30px;
+}
+
+
+/* ===========================
+   PRODUCT CARD HOVER
+=========================== */
+
+.product-card {
+
+    transition: .3s;
+
+}
+
+.product-card:hover {
+
+    transform: translateY(-8px);
+
+    box-shadow: 0 12px 30px rgba(0,0,0,.1);
+
+}
+
+
+/* ===========================
+   MOBILE HERO
+=========================== */
+
+@media (max-width: 768px) {
+
+.hero {
+    padding: 60px 20px;
+}
+
+.hero h1 {
+    font-size: 26px;
+}
+
+}
